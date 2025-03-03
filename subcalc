@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 import argparse
 import sys
-from vlsm import get_subnet_info, display_subnet_info, print_table
+from vlsm import get_subnet_info as get_vlsm_subnet_info, display_subnet_info as display_vlsm_subnet_info, print_table
+from flsm import get_subnet_info as get_flsm_subnet_info, display_subnet_info as display_flsm_subnet_info
 
 def run_vlsm_tool():
     """Run the Variable Length Subnet Mask calculator tool"""
@@ -15,7 +16,7 @@ def run_vlsm_tool():
         return
     
     try:
-        subnets = get_subnet_info(base_subnet, hosts_required)
+        subnets = get_vlsm_subnet_info(base_subnet, hosts_required)
     except ValueError as e:
         print(e)
         return
@@ -25,7 +26,36 @@ def run_vlsm_tool():
     ]
     
     for subnet_info in subnets:
-        table_data.append(display_subnet_info(subnet_info))
+        table_data.append(display_vlsm_subnet_info(subnet_info))
+    
+    print_table(table_data)
+
+def run_flsm_tool():
+    """Run the Fixed Length Subnet Mask calculator tool"""
+    base_subnet = input("Enter the base subnet address (e.g., 192.168.0.0/24): ")
+    num_subnets = input("Enter the number of subnets to create: ")
+
+    try:
+        num_subnets = int(num_subnets)
+        if num_subnets <= 0:
+            print("Number of subnets must be greater than 0.")
+            return
+    except ValueError:
+        print("Invalid input for number of subnets. Please provide a positive integer.")
+        return
+    
+    try:
+        subnets = get_flsm_subnet_info(base_subnet, num_subnets)
+    except ValueError as e:
+        print(e)
+        return
+    
+    table_data = [
+        ["Subnet", "Subnet Mask", "Network ID", "Broadcast ID", "First Host IP", "Last Host IP", "Total Hosts"]
+    ]
+    
+    for subnet_info in subnets:
+        table_data.append(display_flsm_subnet_info(subnet_info))
     
     print_table(table_data)
 
@@ -33,11 +63,14 @@ def main():
     """Main entry point for the subcalc tool"""
     parser = argparse.ArgumentParser(description="Subnet Calculator Tool")
     parser.add_argument("--vlsm", action="store_true", help="Run Variable Length Subnet Mask calculator")
+    parser.add_argument("--flsm", action="store_true", help="Run Fixed Length Subnet Mask calculator")
     
     args = parser.parse_args()
     
     if args.vlsm:
         run_vlsm_tool()
+    elif args.flsm:
+        run_flsm_tool()
     else:
         parser.print_help()
         print("\nError: Please specify one of the available options")
