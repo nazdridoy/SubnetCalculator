@@ -133,10 +133,39 @@ def run_flsm_tool(network=None, subnet_input=None):
 
 def main():
     """Main entry point for the subcalc tool"""
-    parser = argparse.ArgumentParser(description="Subnet Calculator Tool")
-    parser.add_argument("--network", type=str, help="Base network address in CIDR notation (e.g., 192.168.0.0/24)")
-    parser.add_argument("--vlsm", nargs='*', type=int, help="Run VLSM with specified host requirements (e.g., --vlsm 20 40 80)")
-    parser.add_argument("--flsm", nargs='?', const='interactive', help="Run FLSM with specified number of subnets or prefix length (e.g., --flsm 4 or --flsm /28)")
+    parser = argparse.ArgumentParser(
+        description="Subnet Calculator Tool - Calculate and display subnet information",
+        epilog="""
+Examples:
+  ./subcalc --network 192.168.0.0/24                    # Display network summary
+  ./subcalc --network 192.168.0.0/24 --flsm 16          # Create 16 equal-sized subnets
+  ./subcalc --network 192.168.0.0/24 --flsm /28         # Create subnets with prefix /28
+  ./subcalc --network 192.168.0.0/24 --vlsm 20 40 50    # Create subnets with specified host capacities
+  ./subcalc --flsm                                      # Run FLSM in interactive mode
+  ./subcalc --vlsm                                      # Run VLSM in interactive mode
+        """,
+        formatter_class=argparse.RawDescriptionHelpFormatter  # This preserves formatting in the epilog
+    )
+    
+    parser.add_argument(
+        "--network", 
+        type=str, 
+        help="Base network address in CIDR notation (e.g., 192.168.0.0/24)"
+    )
+    
+    parser.add_argument(
+        "--vlsm", 
+        nargs='*', 
+        type=int, 
+        help="Run Variable Length Subnet Mask calculator with specified host requirements (e.g., --vlsm 20 40 80)"
+    )
+    
+    parser.add_argument(
+        "--flsm", 
+        nargs='?', 
+        const='interactive', 
+        help="Run Fixed Length Subnet Mask calculator with either number of subnets (e.g., --flsm 4) or target prefix length (e.g., --flsm /28)"
+    )
     
     args = parser.parse_args()
     
