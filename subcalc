@@ -1,0 +1,47 @@
+#!/usr/bin/env python3
+import argparse
+import sys
+from vlsm import get_subnet_info, display_subnet_info, print_table
+
+def run_vlsm_tool():
+    """Run the Variable Length Subnet Mask calculator tool"""
+    base_subnet = input("Enter the base subnet address (e.g., 192.168.0.0/24): ")
+    hosts_required = input("Enter the required number of hosts for multiple subnets, separated by commas (e.g., 50,40,10,30,60): ")
+
+    try:
+        hosts_required = list(map(int, hosts_required.split(',')))
+    except ValueError:
+        print("Invalid input for hosts required. Please provide a comma-separated list of integers.")
+        return
+    
+    try:
+        subnets = get_subnet_info(base_subnet, hosts_required)
+    except ValueError as e:
+        print(e)
+        return
+    
+    table_data = [
+        ["Subnet", "Subnet Mask", "Network ID", "Broadcast ID", "First Host IP", "Last Host IP", "Needed Hosts", "Total Hosts"]
+    ]
+    
+    for subnet_info in subnets:
+        table_data.append(display_subnet_info(subnet_info))
+    
+    print_table(table_data)
+
+def main():
+    """Main entry point for the subcalc tool"""
+    parser = argparse.ArgumentParser(description="Subnet Calculator Tool")
+    parser.add_argument("--vlsm", action="store_true", help="Run Variable Length Subnet Mask calculator")
+    
+    args = parser.parse_args()
+    
+    if args.vlsm:
+        run_vlsm_tool()
+    else:
+        parser.print_help()
+        print("\nError: Please specify one of the available options")
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main() 
