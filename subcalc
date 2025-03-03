@@ -2,6 +2,11 @@
 import argparse
 import sys
 import ipaddress
+try:
+    import readline  # This enables arrow keys, history, and line editing
+except ImportError:
+    # readline is not available on all platforms (like Windows without additional packages)
+    pass
 from vlsm import get_subnet_info as get_vlsm_subnet_info, display_subnet_info as display_vlsm_subnet_info, print_table
 from flsm import get_subnet_info as get_flsm_subnet_info, get_subnet_info_by_prefix as get_flsm_subnet_info_by_prefix, display_subnet_info as display_flsm_subnet_info
 
@@ -27,7 +32,7 @@ def run_vlsm_tool(network=None, hosts_required=None):
         if network is None:
             network = input("Enter the base subnet address (e.g., 192.168.0.0/24): ")
         
-        if hosts_required is None:
+        if hosts_required is None or len(hosts_required) == 0:
             hosts_input = input("Enter the required number of hosts for multiple subnets, separated by commas (e.g., 50,40,10,30,60): ")
             try:
                 hosts_required = list(map(int, hosts_input.split(',')))
