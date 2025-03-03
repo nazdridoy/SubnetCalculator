@@ -12,7 +12,7 @@ A powerful command-line subnet calculator that supports both Variable Length Sub
 - **Interactive Mode**: User-friendly interactive input with command history and editing
 - **Command-line Mode**: Scriptable operation for automation
 
-![2025-03-03_10-53-01](https://github.com/user-attachments/assets/aaf6153f-5f71-4f00-9d61-61543a1ece21)
+![2025-03-03_10-53-01](https://github.com/user-attachments/assets/3058ced6-a0dc-45fa-ae99-1912a8890e4c)
 
 ## Installation
 
