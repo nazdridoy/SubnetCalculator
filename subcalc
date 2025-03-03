@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import sys
+import ipaddress
 from vlsm import get_subnet_info as get_vlsm_subnet_info, display_subnet_info as display_vlsm_subnet_info, print_table
 from flsm import get_subnet_info as get_flsm_subnet_info, display_subnet_info as display_flsm_subnet_info
 
@@ -45,13 +46,44 @@ def run_flsm_tool():
         return
     
     try:
+        # Get subnets and calculation info
         subnets = get_flsm_subnet_info(base_subnet, num_subnets)
+        
+        # Calculate the summary information
+        if not subnets:
+            print("No subnets created.")
+            return
+            
+        # Extract information from the first subnet
+        network_obj = ipaddress.ip_network(base_subnet, strict=False)
+        subnet_obj = subnets[0][0]
+        subnet_bits = subnet_obj.prefixlen - network_obj.prefixlen
+        actual_subnets = len(subnets)
+        hosts_per_subnet = subnets[0][2]  # From the tuple (subnet, index, total_hosts)
+        
+        # Calculate max possible subnets with this prefix length
+        max_subnets = 2 ** subnet_bits
+        unused_subnets = max_subnets - actual_subnets
+        
+        # Print summary
+        print("\nFLSM Summary:")
+        print(f"Base Network:         {network_obj}")
+        print(f"Subnet Bits:          {subnet_bits}")
+        print(f"New Prefix Length:    /{subnet_obj.prefixlen}")
+        print(f"Subnet Mask:          {subnet_obj.netmask}")
+        print(f"Hosts per Subnet:     {hosts_per_subnet}")
+        print(f"Requested Subnets:    {num_subnets}")
+        print(f"Actual Subnets:       {actual_subnets}")
+        print(f"Unused Subnets:       {unused_subnets}")
+        print()
+        
     except ValueError as e:
         print(e)
         return
     
+    # Generate the table data
     table_data = [
-        ["Subnet", "Subnet Mask", "Network ID", "Broadcast ID", "First Host IP", "Last Host IP", "Total Hosts"]
+        ["Subnet", "CIDR Notation", "Subnet Mask", "Network ID", "Broadcast ID", "First Host IP", "Last Host IP", "Hosts"]
     ]
     
     for subnet_info in subnets:

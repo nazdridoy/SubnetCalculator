@@ -44,6 +44,7 @@ def display_subnet_info(subnet_info):
     subnet, index, total_hosts = subnet_info
     return [
         f"Subnet {index}",
+        f"{subnet}",
         f"{subnet.netmask}",
         f"{subnet.network_address}",
         f"{subnet.broadcast_address}",
