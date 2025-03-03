@@ -39,6 +39,47 @@ def get_subnet_info(network, num_subnets):
     
     return allocated_subnets
 
+def get_subnet_info_by_prefix(network, new_prefix):
+    """
+    Calculate subnet information using Fixed Length Subnet Mask with a specified prefix length.
+    
+    Args:
+        network: Base network in CIDR notation (e.g., '192.168.0.0/24')
+        new_prefix: The new prefix length to use for subnets (e.g., 28)
+        
+    Returns:
+        List of subnet information tuples (subnet, index, total_hosts)
+    """
+    try:
+        network_address = ipaddress.ip_network(network, strict=False)
+    except ValueError:
+        raise ValueError("Invalid base subnet address. Please provide a valid subnet in CIDR notation.")
+    
+    # Validate the new prefix
+    orig_prefix_len = network_address.prefixlen
+    if new_prefix <= orig_prefix_len:
+        raise ValueError(f"New prefix /{new_prefix} must be larger than the original prefix /{orig_prefix_len}")
+    
+    if new_prefix > 30:  # Allowing /30 as the smallest subnet (2 usable hosts)
+        raise ValueError(f"Prefix /{new_prefix} is too small. The smallest supported prefix is /30.")
+    
+    # Number of hosts per subnet
+    hosts_per_subnet = 2 ** (32 - new_prefix) - 2  # subtract 2 for network and broadcast addresses
+    
+    # Create the subnets
+    allocated_subnets = []
+    actual_subnets = list(network_address.subnets(new_prefix=new_prefix))
+    
+    # Calculate total possible subnets with this prefix
+    subnet_bits = new_prefix - orig_prefix_len
+    max_possible_subnets = 2 ** subnet_bits
+    
+    # Return all possible subnets
+    for i, subnet in enumerate(actual_subnets):
+        allocated_subnets.append((subnet, i+1, hosts_per_subnet))
+    
+    return allocated_subnets
+
 def display_subnet_info(subnet_info):
     """Format subnet information for display in a table."""
     subnet, index, total_hosts = subnet_info

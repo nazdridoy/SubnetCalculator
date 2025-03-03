@@ -3,7 +3,7 @@ import argparse
 import sys
 import ipaddress
 from vlsm import get_subnet_info as get_vlsm_subnet_info, display_subnet_info as display_vlsm_subnet_info, print_table
-from flsm import get_subnet_info as get_flsm_subnet_info, display_subnet_info as display_flsm_subnet_info
+from flsm import get_subnet_info as get_flsm_subnet_info, get_subnet_info_by_prefix as get_flsm_subnet_info_by_prefix, display_subnet_info as display_flsm_subnet_info
 
 def run_vlsm_tool():
     """Run the Variable Length Subnet Mask calculator tool"""
@@ -34,21 +34,35 @@ def run_vlsm_tool():
 def run_flsm_tool():
     """Run the Fixed Length Subnet Mask calculator tool"""
     base_subnet = input("Enter the base subnet address (e.g., 192.168.0.0/24): ")
-    num_subnets = input("Enter the number of subnets to create: ")
-
-    try:
-        num_subnets = int(num_subnets)
-        if num_subnets <= 0:
-            print("Number of subnets must be greater than 0.")
+    subnet_input = input("Enter the number of subnets to create OR prefix length (e.g., 16 or /28): ")
+    
+    # Process the input to determine if it's a number of subnets or a prefix length
+    if subnet_input.startswith('/'):
+        try:
+            prefix_length = int(subnet_input[1:])
+            by_prefix = True
+        except ValueError:
+            print("Invalid prefix length. Please provide a number after the '/' character.")
             return
-    except ValueError:
-        print("Invalid input for number of subnets. Please provide a positive integer.")
-        return
+    else:
+        try:
+            num_subnets = int(subnet_input)
+            if num_subnets <= 0:
+                print("Number of subnets must be greater than 0.")
+                return
+            by_prefix = False
+        except ValueError:
+            print("Invalid input. Please provide either a number of subnets or a prefix length (e.g., /28).")
+            return
     
     try:
-        # Get subnets and calculation info
-        subnets = get_flsm_subnet_info(base_subnet, num_subnets)
-        
+        # Get subnets based on either number of subnets or prefix length
+        if by_prefix:
+            subnets = get_flsm_subnet_info_by_prefix(base_subnet, prefix_length)
+            num_subnets = len(subnets)  # For the summary info
+        else:
+            subnets = get_flsm_subnet_info(base_subnet, num_subnets)
+            
         # Calculate the summary information
         if not subnets:
             print("No subnets created.")
@@ -63,7 +77,7 @@ def run_flsm_tool():
         
         # Calculate max possible subnets with this prefix length
         max_subnets = 2 ** subnet_bits
-        unused_subnets = max_subnets - actual_subnets
+        unused_subnets = max_subnets - actual_subnets if by_prefix else max_subnets - num_subnets
         
         # Print summary
         print("\nFLSM Summary:")
@@ -72,9 +86,14 @@ def run_flsm_tool():
         print(f"New Prefix Length:    /{subnet_obj.prefixlen}")
         print(f"Subnet Mask:          {subnet_obj.netmask}")
         print(f"Hosts per Subnet:     {hosts_per_subnet}")
-        print(f"Requested Subnets:    {num_subnets}")
-        print(f"Actual Subnets:       {actual_subnets}")
-        print(f"Unused Subnets:       {unused_subnets}")
+        if by_prefix:
+            print(f"Specified Prefix:     /{prefix_length}")
+            print(f"Maximum Subnets:      {max_subnets}")
+            print(f"Created Subnets:      {actual_subnets}")
+        else:
+            print(f"Requested Subnets:    {num_subnets}")
+            print(f"Actual Subnets:       {actual_subnets}")
+            print(f"Unused Subnets:       {unused_subnets}")
         print()
         
     except ValueError as e:
