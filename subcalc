@@ -23,113 +23,121 @@ def display_network_summary(network):
 
 def run_vlsm_tool(network=None, hosts_required=None):
     """Run the Variable Length Subnet Mask calculator tool"""
-    if network is None:
-        network = input("Enter the base subnet address (e.g., 192.168.0.0/24): ")
-    
-    if hosts_required is None:
-        hosts_input = input("Enter the required number of hosts for multiple subnets, separated by commas (e.g., 50,40,10,30,60): ")
-        try:
-            hosts_required = list(map(int, hosts_input.split(',')))
-        except ValueError:
-            print("Invalid input for hosts required. Please provide a comma-separated list of integers.")
-            return
-    
     try:
-        subnets = get_vlsm_subnet_info(network, hosts_required)
-    except ValueError as e:
-        print(e)
+        if network is None:
+            network = input("Enter the base subnet address (e.g., 192.168.0.0/24): ")
+        
+        if hosts_required is None:
+            hosts_input = input("Enter the required number of hosts for multiple subnets, separated by commas (e.g., 50,40,10,30,60): ")
+            try:
+                hosts_required = list(map(int, hosts_input.split(',')))
+            except ValueError:
+                print("Invalid input for hosts required. Please provide a comma-separated list of integers.")
+                return
+        
+        try:
+            subnets = get_vlsm_subnet_info(network, hosts_required)
+        except ValueError as e:
+            print(e)
+            return
+        
+        table_data = [
+            ["Subnet", "Subnet Mask", "Network ID", "Broadcast ID", "First Host IP", "Last Host IP", "Needed Hosts", "Total Hosts"]
+        ]
+        
+        for subnet_info in subnets:
+            table_data.append(display_vlsm_subnet_info(subnet_info))
+        
+        print_table(table_data)
+    except KeyboardInterrupt:
+        print("\nOperation cancelled by user.")
         return
-    
-    table_data = [
-        ["Subnet", "Subnet Mask", "Network ID", "Broadcast ID", "First Host IP", "Last Host IP", "Needed Hosts", "Total Hosts"]
-    ]
-    
-    for subnet_info in subnets:
-        table_data.append(display_vlsm_subnet_info(subnet_info))
-    
-    print_table(table_data)
 
 def run_flsm_tool(network=None, subnet_input=None):
     """Run the Fixed Length Subnet Mask calculator tool"""
-    if network is None:
-        network = input("Enter the base subnet address (e.g., 192.168.0.0/24): ")
-    
-    if subnet_input is None:
-        subnet_input = input("Enter the number of subnets to create OR prefix length (e.g., 16 or /28): ")
-    
-    # Process the input to determine if it's a number of subnets or a prefix length
-    by_prefix = False
-    if isinstance(subnet_input, str) and subnet_input.startswith('/'):
-        try:
-            prefix_length = int(subnet_input[1:])
-            by_prefix = True
-        except ValueError:
-            print("Invalid prefix length. Please provide a number after the '/' character.")
-            return
-    else:
-        try:
-            num_subnets = int(subnet_input)
-            if num_subnets <= 0:
-                print("Number of subnets must be greater than 0.")
-                return
-        except ValueError:
-            print("Invalid input. Please provide either a number of subnets or a prefix length (e.g., /28).")
-            return
-    
     try:
-        # Get subnets based on either number of subnets or prefix length
-        if by_prefix:
-            subnets = get_flsm_subnet_info_by_prefix(network, prefix_length)
-            num_subnets = len(subnets)  # For the summary info
+        if network is None:
+            network = input("Enter the base subnet address (e.g., 192.168.0.0/24): ")
+        
+        if subnet_input is None:
+            subnet_input = input("Enter the number of subnets to create OR prefix length (e.g., 16 or /28): ")
+        
+        # Process the input to determine if it's a number of subnets or a prefix length
+        by_prefix = False
+        if isinstance(subnet_input, str) and subnet_input.startswith('/'):
+            try:
+                prefix_length = int(subnet_input[1:])
+                by_prefix = True
+            except ValueError:
+                print("Invalid prefix length. Please provide a number after the '/' character.")
+                return
         else:
-            subnets = get_flsm_subnet_info(network, num_subnets)
+            try:
+                num_subnets = int(subnet_input)
+                if num_subnets <= 0:
+                    print("Number of subnets must be greater than 0.")
+                    return
+            except ValueError:
+                print("Invalid input. Please provide either a number of subnets or a prefix length (e.g., /28).")
+                return
+        
+        try:
+            # Get subnets based on either number of subnets or prefix length
+            if by_prefix:
+                subnets = get_flsm_subnet_info_by_prefix(network, prefix_length)
+                num_subnets = len(subnets)  # For the summary info
+            else:
+                subnets = get_flsm_subnet_info(network, num_subnets)
             
-        # Calculate the summary information
-        if not subnets:
-            print("No subnets created.")
+            # Calculate the summary information
+            if not subnets:
+                print("No subnets created.")
+                return
+            
+            # Extract information from the first subnet
+            network_obj = ipaddress.ip_network(network, strict=False)
+            subnet_obj = subnets[0][0]
+            subnet_bits = subnet_obj.prefixlen - network_obj.prefixlen
+            actual_subnets = len(subnets)
+            hosts_per_subnet = subnets[0][2]  # From the tuple (subnet, index, total_hosts)
+            
+            # Calculate max possible subnets with this prefix length
+            max_subnets = 2 ** subnet_bits
+            unused_subnets = max_subnets - actual_subnets if by_prefix else max_subnets - num_subnets
+            
+            # Print summary
+            print("\nFLSM Summary:")
+            print(f"Base Network:         {network_obj}")
+            print(f"Subnet Bits:          {subnet_bits}")
+            print(f"New Prefix Length:    /{subnet_obj.prefixlen}")
+            print(f"Subnet Mask:          {subnet_obj.netmask}")
+            print(f"Hosts per Subnet:     {hosts_per_subnet}")
+            if by_prefix:
+                print(f"Specified Prefix:     /{prefix_length}")
+                print(f"Maximum Subnets:      {max_subnets}")
+                print(f"Created Subnets:      {actual_subnets}")
+            else:
+                print(f"Requested Subnets:    {num_subnets}")
+                print(f"Actual Subnets:       {actual_subnets}")
+                print(f"Unused Subnets:       {unused_subnets}")
+            print()
+            
+        except ValueError as e:
+            print(e)
             return
-            
-        # Extract information from the first subnet
-        network_obj = ipaddress.ip_network(network, strict=False)
-        subnet_obj = subnets[0][0]
-        subnet_bits = subnet_obj.prefixlen - network_obj.prefixlen
-        actual_subnets = len(subnets)
-        hosts_per_subnet = subnets[0][2]  # From the tuple (subnet, index, total_hosts)
         
-        # Calculate max possible subnets with this prefix length
-        max_subnets = 2 ** subnet_bits
-        unused_subnets = max_subnets - actual_subnets if by_prefix else max_subnets - num_subnets
+        # Generate the table data
+        table_data = [
+            ["Subnet", "CIDR Notation", "Subnet Mask", "Network ID", "Broadcast ID", "First Host IP", "Last Host IP", "Hosts"]
+        ]
         
-        # Print summary
-        print("\nFLSM Summary:")
-        print(f"Base Network:         {network_obj}")
-        print(f"Subnet Bits:          {subnet_bits}")
-        print(f"New Prefix Length:    /{subnet_obj.prefixlen}")
-        print(f"Subnet Mask:          {subnet_obj.netmask}")
-        print(f"Hosts per Subnet:     {hosts_per_subnet}")
-        if by_prefix:
-            print(f"Specified Prefix:     /{prefix_length}")
-            print(f"Maximum Subnets:      {max_subnets}")
-            print(f"Created Subnets:      {actual_subnets}")
-        else:
-            print(f"Requested Subnets:    {num_subnets}")
-            print(f"Actual Subnets:       {actual_subnets}")
-            print(f"Unused Subnets:       {unused_subnets}")
-        print()
+        for subnet_info in subnets:
+            table_data.append(display_flsm_subnet_info(subnet_info))
         
-    except ValueError as e:
-        print(e)
+        print_table(table_data)
+    except KeyboardInterrupt:
+        print("\nOperation cancelled by user.")
         return
-    
-    # Generate the table data
-    table_data = [
-        ["Subnet", "CIDR Notation", "Subnet Mask", "Network ID", "Broadcast ID", "First Host IP", "Last Host IP", "Hosts"]
-    ]
-    
-    for subnet_info in subnets:
-        table_data.append(display_flsm_subnet_info(subnet_info))
-    
-    print_table(table_data)
 
 def main():
     """Main entry point for the subcalc tool"""
@@ -204,4 +212,8 @@ Examples:
     sys.exit(1)
 
 if __name__ == "__main__":
-    main() 
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\nOperation cancelled by user.")
+        sys.exit(0) 
