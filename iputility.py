@@ -17,32 +17,60 @@ def validate_ip(ip_address):
         binary = bin(int(ip))[2:].zfill(32)
         result["binary"] = ".".join(binary[i:i+8] for i in range(0, 32, 8))
         
+        # Get hex representation
+        result["hex"] = format(int(ip), '08X')
+        
+        # Get decimal representation
+        result["decimal"] = int(ip)
+        
+        # Get octet values
+        octets = ip_address.split('.')
+        result["octets"] = " | ".join(octets)
+        
         # Determine IP class
         first_octet = int(ip_address.split('.')[0])
         if 1 <= first_octet <= 126:
-            result["class"] = "A"
+            result["class"] = "Class A (1-126)"
         elif 128 <= first_octet <= 191:
-            result["class"] = "B"
+            result["class"] = "Class B (128-191)"
         elif 192 <= first_octet <= 223:
-            result["class"] = "C"
+            result["class"] = "Class C (192-223)"
         elif 224 <= first_octet <= 239:
-            result["class"] = "D (Multicast)"
+            result["class"] = "Class D (Multicast) (224-239)"
         elif 240 <= first_octet <= 255:
-            result["class"] = "E (Reserved)"
+            result["class"] = "Class E (Reserved) (240-255)"
         
         # Determine IP type
         if ip.is_private:
-            result["type"] = "Private"
+            result["type"] = "Private Address"
+            # Add RFC1918 information
+            if first_octet == 10:
+                result["range_info"] = "Address is in the private range 10.0.0.0/8 (RFC1918)"
+            elif first_octet == 172 and 16 <= int(octets[1]) <= 31:
+                result["range_info"] = "Address is in the private range 172.16.0.0/12 (RFC1918)"
+            elif first_octet == 192 and int(octets[1]) == 168:
+                result["range_info"] = "Address is in the private range 192.168.0.0/16 (RFC1918)"
         elif ip.is_loopback:
-            result["type"] = "Loopback"
+            result["type"] = "Loopback Address"
+            result["range_info"] = "Address is in the loopback range 127.0.0.0/8"
         elif ip.is_multicast:
-            result["type"] = "Multicast"
+            result["type"] = "Multicast Address"
+            result["range_info"] = "Address is used for multicast (one to many) communication"
         elif ip.is_reserved:
-            result["type"] = "Reserved"
+            result["type"] = "Reserved Address"
+            result["range_info"] = "Address is reserved for special use"
         elif ip.is_link_local:
-            result["type"] = "Link Local"
+            result["type"] = "Link Local Address"
+            result["range_info"] = "Address is in the link-local range 169.254.0.0/16"
         else:
-            result["type"] = "Public"
+            result["type"] = "Public Address"
+            result["range_info"] = "Address is publicly routable on the internet"
+        
+        # Add communication type
+        if ip.is_multicast:
+            result["comm_type"] = "Address is multicast (one to many communication)"
+        else:
+            result["comm_type"] = "Address is unicast (host to host communication)"
             
     except ValueError as e:
         result["error"] = str(e)
@@ -142,11 +170,20 @@ def run_ip_validation_tool(ip_address=None):
             print(f"\nError: {result['error']}")
             return
         
-        print(f"\nIP Validation Results for {ip_address}:")
+        print(f"\nIP Address Analysis Results:")
+        print()
+        print(f"IP Address:        {ip_address}")
         print(f"Valid IPv4:         {result['valid']}")
-        print(f"Binary:             {result['binary']}")
-        print(f"IP Class:           {result['class']}")
-        print(f"IP Type:            {result['type']}")
+        print(f"Address Type:      {result['type']}")
+        print(f"Binary Form:       {result['binary']}")
+        print(f"Hex Form:          {result['hex']}")
+        print(f"Decimal Form:      {result['decimal']}")
+        print(f"Octet Values:      {result['octets']}")
+        print(f"Address Class:     {result['class']}")
+        print()
+        print(f"Network Info:")
+        print(f"{result['range_info']}")
+        print(f"{result['comm_type']}")
     
     except KeyboardInterrupt:
         print("\nOperation cancelled by user.")
