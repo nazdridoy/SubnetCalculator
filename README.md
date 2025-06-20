@@ -13,6 +13,10 @@ A powerful command-line subnet calculator that supports both Variable Length Sub
   - CIDR notation (e.g., /24)
   - Subnet masks (e.g., 255.255.255.0)
   - Wildcard masks (e.g., 0.0.0.255)
+- **IP Address Utilities**: Tools for IP address analysis:
+  - IP validation and classification
+  - Check if an IP is within a subnet
+  - Analyze IP address ranges
 - **Interactive Mode**: User-friendly interactive input with command history and editing
 - **Command-line Mode**: Scriptable operation for automation
 
@@ -75,22 +79,55 @@ Convert between CIDR, subnet mask, and wildcard mask notations:
 ./subcalc --convert                   # Run in interactive mode
 ```
 
+### IP Address Utilities
+
+#### Validate an IP Address
+Validate an IP address and display information about it:
+
+```bash
+./subcalc --validate 192.168.1.1      # Validate a specific IP
+./subcalc --validate                  # Run in interactive mode
+```
+
+#### Check if an IP is within a Network
+Check if an IP address belongs to a specified network:
+
+```bash
+./subcalc --check-ip 192.168.1.5 192.168.1.0/24  # Check IP in network
+./subcalc --check-ip 10.0.0.1                    # Prompt for network
+./subcalc --check-ip                             # Fully interactive mode
+```
+
+#### Analyze IP Address Range
+Calculate information about an IP address range:
+
+```bash
+./subcalc --range 192.168.1.10 192.168.1.20  # Analyze specific range
+./subcalc --range 10.0.0.1                   # Prompt for end IP
+./subcalc --range                            # Fully interactive mode
+```
+
 ## Command-line Arguments
 
 ```
-usage: subcalc [-h] [--network NETWORK] [--vlsm [VLSM ...]] [--flsm [FLSM]] [--convert [CONVERT]]
+usage: subcalc [-h] [--network NETWORK] [--vlsm [VLSM ...]] [--flsm [FLSM]] [--convert [CONVERT]] [--validate [VALIDATE]]
+               [--check-ip [CHECK_IP ...]] [--range [RANGE ...]]
 
 Subnet Calculator Tool - Calculate and display subnet information
 
 options:
-  -h, --help           show this help message and exit
-  --network NETWORK    Base network address in CIDR notation (e.g., 192.168.0.0/24)
-  --vlsm [VLSM ...]    Run Variable Length Subnet Mask calculator with specified host 
-                       requirements (e.g., --vlsm 20 40 80)
-  --flsm [FLSM]        Run Fixed Length Subnet Mask calculator with either number of 
-                       subnets (e.g., --flsm 4) or target prefix length (e.g., --flsm /28)
-  --convert [CONVERT]  Convert between CIDR notation, subnet masks, and wildcard masks (e.g., --convert
-                       /24 or --convert 255.255.255.0)
+  -h, --help            show this help message and exit
+  --network NETWORK     Base network address in CIDR notation (e.g., 192.168.0.0/24)
+  --vlsm [VLSM ...]     Run Variable Length Subnet Mask calculator with specified host requirements (e.g., --vlsm 20 40 80)
+  --flsm [FLSM]         Run Fixed Length Subnet Mask calculator with either number of subnets (e.g., --flsm 4) or target prefix length
+                        (e.g., --flsm /28)
+  --convert [CONVERT]   Convert between CIDR notation, subnet masks, and wildcard masks (e.g., --convert /24 or --convert
+                        255.255.255.0)
+  --validate [VALIDATE]
+                        Validate an IP address and show its properties (e.g., --validate 192.168.1.1)
+  --check-ip [CHECK_IP ...]
+                        Check if an IP address is in a network (e.g., --check-ip 192.168.1.5 192.168.1.0/24)
+  --range [RANGE ...]   Analyze an IP address range (e.g., --range 192.168.1.10 192.168.1.20)
 
 Examples:
   ./subcalc --network 192.168.0.0/24                    # Display network summary
@@ -102,6 +139,9 @@ Examples:
   ./subcalc --convert /24                               # Convert between CIDR, subnet mask, and wildcard mask
   ./subcalc --convert 255.255.255.0                     # Convert between notations using subnet mask
   ./subcalc --convert                                   # Run conversion tool in interactive mode
+  ./subcalc --validate 192.168.1.5                      # Validate an IP address and display information
+  ./subcalc --check-ip 192.168.1.5 192.168.1.0/24       # Check if an IP address is in a network
+  ./subcalc --range 192.168.1.10 192.168.1.20           # Analyze an IP address range
 ```
 
 ## Example Outputs
@@ -176,6 +216,49 @@ Conversion Results for 0.0.0.255 (Wildcard Mask):
 CIDR Notation:      /24
 Subnet Mask:        255.255.255.0
 Wildcard Mask:      0.0.0.255
+```
+
+### IP Validation Output
+```
+IP Validation Results for 192.168.1.1:
+Valid IPv4:         True
+Binary:             11000000.10101000.00000001.00000001
+IP Class:           C
+IP Type:            Private
+```
+
+### IP Network Membership Check Output
+```
+IP Network Membership Check:
+IP Address:         192.168.1.5
+Network:            192.168.1.0/24
+Is IP in Network:   True
+
+Network Details:
+Network Address:    192.168.1.0
+Broadcast Address:  192.168.1.255
+Subnet Mask:        255.255.255.0
+Prefix Length:      /24
+Total Addresses:    256
+First Usable Host:  192.168.1.1
+Last Usable Host:   192.168.1.254
+
+Host Position Details:
+Position in Network: 5 (starting from 0)
+Position from End:   250 (to broadcast)
+```
+
+### IP Range Analysis Output
+```
+IP Range Analysis:
+Start IP:           192.168.1.10
+End IP:             192.168.1.20
+Total Addresses:    11
+
+Optimal CIDR Block Representation:
+  Block 1: 192.168.1.10/31 (2 addresses)
+  Block 2: 192.168.1.12/30 (4 addresses)
+  Block 3: 192.168.1.16/29 (8 addresses)
 ```
 
 ## Author

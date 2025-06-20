@@ -10,6 +10,7 @@ except ImportError:
 from vlsm import get_subnet_info as get_vlsm_subnet_info, display_subnet_info as display_vlsm_subnet_info, print_table
 from flsm import get_subnet_info as get_flsm_subnet_info, get_subnet_info_by_prefix as get_flsm_subnet_info_by_prefix, display_subnet_info as display_flsm_subnet_info
 from notation import run_conversion_tool
+from iputility import run_ip_validation_tool, run_ip_in_network_tool, run_ip_range_tool
 
 def display_network_summary(network):
     """Display summary information about a network"""
@@ -160,6 +161,9 @@ Examples:
   ./subcalc --convert /24                               # Convert between CIDR, subnet mask, and wildcard mask
   ./subcalc --convert 255.255.255.0                     # Convert between notations using subnet mask
   ./subcalc --convert                                   # Run conversion tool in interactive mode
+  ./subcalc --validate 192.168.1.5                      # Validate an IP address and display information
+  ./subcalc --check-ip 192.168.1.5 192.168.1.0/24       # Check if an IP address is in a network
+  ./subcalc --range 192.168.1.10 192.168.1.20           # Analyze an IP address range
         """,
         formatter_class=argparse.RawDescriptionHelpFormatter  # This preserves formatting in the epilog
     )
@@ -191,7 +195,55 @@ Examples:
         help="Convert between CIDR notation, subnet masks, and wildcard masks (e.g., --convert /24 or --convert 255.255.255.0)"
     )
     
+    # IP Address Utility arguments
+    parser.add_argument(
+        "--validate",
+        nargs='?',
+        const='interactive',
+        help="Validate an IP address and show its properties (e.g., --validate 192.168.1.1)"
+    )
+    
+    parser.add_argument(
+        "--check-ip",
+        nargs='*',
+        help="Check if an IP address is in a network (e.g., --check-ip 192.168.1.5 192.168.1.0/24)"
+    )
+    
+    parser.add_argument(
+        "--range",
+        nargs='*',
+        help="Analyze an IP address range (e.g., --range 192.168.1.10 192.168.1.20)"
+    )
+    
     args = parser.parse_args()
+    
+    # IP Validation tool
+    if args.validate:
+        if args.validate == 'interactive':
+            run_ip_validation_tool()
+        else:
+            run_ip_validation_tool(args.validate)
+        return
+    
+    # IP in Network checker
+    if args.check_ip is not None:
+        if len(args.check_ip) == 0:
+            run_ip_in_network_tool()
+        elif len(args.check_ip) == 1:
+            run_ip_in_network_tool(ip_address=args.check_ip[0])
+        else:
+            run_ip_in_network_tool(ip_address=args.check_ip[0], network=args.check_ip[1])
+        return
+    
+    # IP Range analyzer
+    if args.range is not None:
+        if len(args.range) == 0:
+            run_ip_range_tool()
+        elif len(args.range) == 1:
+            run_ip_range_tool(start_ip=args.range[0])
+        else:
+            run_ip_range_tool(start_ip=args.range[0], end_ip=args.range[1])
+        return
     
     # Conversion mode
     if args.convert:
