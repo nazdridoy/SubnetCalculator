@@ -9,6 +9,10 @@ A powerful command-line subnet calculator that supports both Variable Length Sub
 - **FLSM Calculation**: Create equal-sized subnets based on either:
   - Number of required subnets
   - Specific prefix length
+- **Notation Conversion**: Easily convert between:
+  - CIDR notation (e.g., /24)
+  - Subnet masks (e.g., 255.255.255.0)
+  - Wildcard masks (e.g., 0.0.0.255)
 - **Interactive Mode**: User-friendly interactive input with command history and editing
 - **Command-line Mode**: Scriptable operation for automation
 
@@ -61,12 +65,20 @@ Run the tool interactively:
 ./subcalc --vlsm     # For VLSM calculation
 ```
 
+### Notation Conversion
+Convert between CIDR, subnet mask, and wildcard mask notations:
 
+```bash
+./subcalc --convert /24               # Convert from CIDR notation
+./subcalc --convert 255.255.255.0     # Convert from subnet mask notation
+./subcalc --convert 0.0.0.255         # Convert from wildcard mask notation
+./subcalc --convert                   # Run in interactive mode
+```
 
 ## Command-line Arguments
 
 ```
-usage: subcalc [-h] [--network NETWORK] [--vlsm [VLSM ...]] [--flsm [FLSM]]
+usage: subcalc [-h] [--network NETWORK] [--vlsm [VLSM ...]] [--flsm [FLSM]] [--convert [CONVERT]]
 
 Subnet Calculator Tool - Calculate and display subnet information
 
@@ -77,6 +89,8 @@ options:
                        requirements (e.g., --vlsm 20 40 80)
   --flsm [FLSM]        Run Fixed Length Subnet Mask calculator with either number of 
                        subnets (e.g., --flsm 4) or target prefix length (e.g., --flsm /28)
+  --convert [CONVERT]  Convert between CIDR notation, subnet masks, and wildcard masks (e.g., --convert
+                       /24 or --convert 255.255.255.0)
 
 Examples:
   ./subcalc --network 192.168.0.0/24                    # Display network summary
@@ -85,8 +99,10 @@ Examples:
   ./subcalc --network 192.168.0.0/24 --vlsm 20 40 50    # Create subnets with specified host capacities
   ./subcalc --flsm                                      # Run FLSM in interactive mode
   ./subcalc --vlsm                                      # Run VLSM in interactive mode
+  ./subcalc --convert /24                               # Convert between CIDR, subnet mask, and wildcard mask
+  ./subcalc --convert 255.255.255.0                     # Convert between notations using subnet mask
+  ./subcalc --convert                                   # Run conversion tool in interactive mode
 ```
-
 
 ## Example Outputs
 
@@ -142,6 +158,24 @@ Unused Subnets:       1
 +------------------+-----------------+---------------+---------------+---------------+---------------+--------------+-------------+
 
 ...
+```
+
+### Notation Conversion Output
+```
+Conversion Results for /24 (CIDR):
+CIDR Notation:      /24
+Subnet Mask:        255.255.255.0
+Wildcard Mask:      0.0.0.255
+
+Conversion Results for 255.255.255.0 (Subnet Mask):
+CIDR Notation:      /24
+Subnet Mask:        255.255.255.0
+Wildcard Mask:      0.0.0.255
+
+Conversion Results for 0.0.0.255 (Wildcard Mask):
+CIDR Notation:      /24
+Subnet Mask:        255.255.255.0
+Wildcard Mask:      0.0.0.255
 ```
 
 ## Author
