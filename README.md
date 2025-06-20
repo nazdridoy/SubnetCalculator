@@ -168,6 +168,7 @@ Examples:
 
 ### Network Summary
 ```
+
 Network Summary for 192.168.0.0/24:
 Network Address:     192.168.0.0
 Broadcast Address:   192.168.0.255
@@ -177,6 +178,7 @@ Number of Addresses: 256
 Usable Hosts:        254
 First Usable Host:   192.168.0.1
 Last Usable Host:    192.168.0.254
+
 ```
 
 ### FLSM Output
@@ -188,9 +190,9 @@ Subnet Bits:          2
 New Prefix Length:    /26
 Subnet Mask:          255.255.255.192
 Hosts per Subnet:     62
-Requested Subnets:    3
-Actual Subnets:       3
-Unused Subnets:       1
+Requested Subnets:    4
+Actual Subnets:       4
+Unused Subnets:       0
 
 +----------+------------------+-----------------+---------------+---------------+---------------+---------------+-------+
 | Subnet   | CIDR Notation    | Subnet Mask     | Network ID    | Broadcast ID  | First Host IP | Last Host IP  | Hosts |
@@ -201,6 +203,8 @@ Unused Subnets:       1
 +----------+------------------+-----------------+---------------+---------------+---------------+---------------+-------+
 | Subnet 3 | 192.168.0.128/26 | 255.255.255.192 | 192.168.0.128 | 192.168.0.191 | 192.168.0.129 | 192.168.0.190 | 62    |
 +----------+------------------+-----------------+---------------+---------------+---------------+---------------+-------+
+| Subnet 4 | 192.168.0.192/26 | 255.255.255.192 | 192.168.0.192 | 192.168.0.255 | 192.168.0.193 | 192.168.0.254 | 62    |
++----------+------------------+-----------------+---------------+---------------+---------------+---------------+-------+
 
 ...
 ```
@@ -210,11 +214,13 @@ Unused Subnets:       1
 +------------------+-----------------+---------------+---------------+---------------+---------------+--------------+-------------+
 | Subnet           | Subnet Mask     | Network ID    | Broadcast ID  | First Host IP | Last Host IP  | Needed Hosts | Total Hosts |
 +------------------+-----------------+---------------+---------------+---------------+---------------+--------------+-------------+
-| 192.168.0.0/26   | 255.255.255.192 | 192.168.0.0   | 192.168.0.63  | 192.168.0.1   | 192.168.0.62  | 40           | 62          |
+| 192.168.0.0/25   | 255.255.255.128 | 192.168.0.0   | 192.168.0.127 | 192.168.0.1   | 192.168.0.126 | 100          | 126         |
 +------------------+-----------------+---------------+---------------+---------------+---------------+--------------+-------------+
-| 192.168.0.64/26  | 255.255.255.192 | 192.168.0.64  | 192.168.0.127 | 192.168.0.65  | 192.168.0.126 | 50           | 62          |
+| 192.168.0.128/26 | 255.255.255.192 | 192.168.0.128 | 192.168.0.191 | 192.168.0.129 | 192.168.0.190 | 50           | 62          |
 +------------------+-----------------+---------------+---------------+---------------+---------------+--------------+-------------+
-| 192.168.0.128/27 | 255.255.255.224 | 192.168.0.128 | 192.168.0.159 | 192.168.0.129 | 192.168.0.158 | 20           | 30          |
+| 192.168.0.192/27 | 255.255.255.224 | 192.168.0.192 | 192.168.0.223 | 192.168.0.193 | 192.168.0.222 | 25           | 30          |
++------------------+-----------------+---------------+---------------+---------------+---------------+--------------+-------------+
+| 192.168.0.224/28 | 255.255.255.240 | 192.168.0.224 | 192.168.0.239 | 192.168.0.225 | 192.168.0.238 | 10           | 14          |
 +------------------+-----------------+---------------+---------------+---------------+---------------+--------------+-------------+
 
 ...
@@ -222,33 +228,42 @@ Unused Subnets:       1
 
 ### Notation Conversion Output
 ```
-Conversion Results for /24 (CIDR):
-CIDR Notation:      /24
-Subnet Mask:        255.255.255.0
-Wildcard Mask:      0.0.0.255
 
-Conversion Results for 255.255.255.0 (Subnet Mask):
-CIDR Notation:      /24
-Subnet Mask:        255.255.255.0
-Wildcard Mask:      0.0.0.255
+Notation Conversion Results:
 
-Conversion Results for 0.0.0.255 (Wildcard Mask):
 CIDR Notation:      /24
 Subnet Mask:        255.255.255.0
 Wildcard Mask:      0.0.0.255
+Binary Mask:        11111111.11111111.11111111.00000000
+Hex Mask:           FFFFFF00
+Network Bits:       24
+Host Bits:          8
+Max Addresses:      256
+Usable Hosts:       254
+
 ```
 
 ### IP Validation Output
 ```
-IP Validation Results for 192.168.1.1:
+IP Address Analysis Results:
+
+IP Address:        192.168.1.5
 Valid IPv4:         True
-Binary:             11000000.10101000.00000001.00000001
-IP Class:           C
-IP Type:            Private
+Address Type:      Private Address
+Binary Form:       11000000.10101000.00000001.00000101
+Hex Form:          C0A80105
+Decimal Form:      3232235781
+Octet Values:      192 | 168 | 1 | 5
+Address Class:     Class C (192-223)
+
+Network Info:
+Address is in the private range 192.168.0.0/16 (RFC1918)
+Address is unicast (host to host communication)
 ```
 
 ### IP Network Membership Check Output
 ```
+
 IP Network Membership Check:
 IP Address:         192.168.1.5
 Network:            192.168.1.0/24
@@ -260,16 +275,19 @@ Broadcast Address:  192.168.1.255
 Subnet Mask:        255.255.255.0
 Prefix Length:      /24
 Total Addresses:    256
+Usable Hosts:       254
 First Usable Host:  192.168.1.1
 Last Usable Host:   192.168.1.254
 
 Host Position Details:
 Position in Network: 5 (starting from 0)
 Position from End:   250 (to broadcast)
+
 ```
 
 ### IP Range Analysis Output
 ```
+
 IP Range Analysis:
 Start IP:           192.168.1.10
 End IP:             192.168.1.20
@@ -278,11 +296,14 @@ Total Addresses:    11
 Optimal CIDR Block Representation:
   Block 1: 192.168.1.10/31 (2 addresses)
   Block 2: 192.168.1.12/30 (4 addresses)
-  Block 3: 192.168.1.16/29 (8 addresses)
+  Block 3: 192.168.1.16/30 (4 addresses)
+  Block 4: 192.168.1.20/32 (1 addresses)
+
 ```
 
 ### Supernetting Output
 ```
+
 Supernetting Results:
 Input Networks (3):
   1. 192.168.1.0/24 (256 addresses)
@@ -319,6 +340,7 @@ Input Networks (3):
    Binary Form:  11000000.10101000.00000000.00000000
    Address Range: 192.168.0.0 - 192.168.3.255
    Total Range:   1024 addresses
+
 ```
 
 ## Author
