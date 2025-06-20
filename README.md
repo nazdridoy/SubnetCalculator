@@ -1,6 +1,10 @@
 # Subnet Calculator (subcalc)
 
-A powerful command-line subnet calculator that supports both Variable Length Subnet Mask (VLSM) and Fixed Length Subnet Mask (FLSM) calculations. Designed for network administrators, students, and anyone working with IP addressing and subnetting.
+Powerful CLI toolkit for IP networking calculations, subnet/supernet planning, and CIDR address management. Master IPv4 subnetting, VLSM/FLSM calculations, and route aggregation with ease. Simplifying complex network tasks for engineers, administrators, and students.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.6+](https://img.shields.io/badge/python-3.6+-blue.svg)](https://www.python.org/downloads/)
+[![Platform](https://img.shields.io/badge/platform-any-green.svg)](https://github.com/nazdridoy/SubnetCalculator)
 
 ## Features
 
@@ -24,7 +28,7 @@ A powerful command-line subnet calculator that supports both Variable Length Sub
 - **Interactive Mode**: User-friendly interactive input with command history and editing
 - **Command-line Mode**: Scriptable operation for automation
 
-![2025-03-03_10-53-01](https://github.com/user-attachments/assets/3058ced6-a0dc-45fa-ae99-1912a8890e4c)
+![SubnetCalculator screenshot showing example output of subnet calculation results](https://github.com/user-attachments/assets/3058ced6-a0dc-45fa-ae99-1912a8890e4c)
 
 ## Installation
 
