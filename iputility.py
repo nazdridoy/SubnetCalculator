@@ -179,6 +179,7 @@ def run_ip_in_network_tool(ip_address=None, network=None):
         print(f"Subnet Mask:        {details['netmask']}")
         print(f"Prefix Length:      {details['prefix_length']}")
         print(f"Total Addresses:    {details['total_addresses']}")
+        print(f"Usable Hosts:       {details['total_addresses'] - 2}")
         print(f"First Usable Host:  {details['first_usable']}")
         print(f"Last Usable Host:   {details['last_usable']}")
         
