@@ -11,6 +11,7 @@ from vlsm import get_subnet_info as get_vlsm_subnet_info, display_subnet_info as
 from flsm import get_subnet_info as get_flsm_subnet_info, get_subnet_info_by_prefix as get_flsm_subnet_info_by_prefix, display_subnet_info as display_flsm_subnet_info
 from notation import run_conversion_tool
 from iputility import run_ip_validation_tool, run_ip_in_network_tool, run_ip_range_tool
+from supernet import run_supernet_tool
 
 def display_network_summary(network):
     """Display summary information about a network"""
@@ -164,6 +165,8 @@ Examples:
   ./subcalc --validate 192.168.1.5                      # Validate an IP address and display information
   ./subcalc --check-ip 192.168.1.5 192.168.1.0/24       # Check if an IP address is in a network
   ./subcalc --range 192.168.1.10 192.168.1.20           # Analyze an IP address range
+  ./subcalc --supernet 192.168.1.0/24 192.168.2.0/24    # Find optimal summary routes for multiple subnets
+  ./subcalc --supernet                                  # Run supernetting tool in interactive mode
         """,
         formatter_class=argparse.RawDescriptionHelpFormatter  # This preserves formatting in the epilog
     )
@@ -215,6 +218,12 @@ Examples:
         help="Analyze an IP address range (e.g., --range 192.168.1.10 192.168.1.20)"
     )
     
+    parser.add_argument(
+        "--supernet",
+        nargs='*',
+        help="Find optimal summary routes for multiple subnets (e.g., --supernet 192.168.1.0/24 192.168.2.0/24)"
+    )
+    
     args = parser.parse_args()
     
     # IP Validation tool
@@ -240,9 +249,9 @@ Examples:
         if len(args.range) == 0:
             run_ip_range_tool()
         elif len(args.range) == 1:
-            run_ip_range_tool(start_ip=args.range[0])
+            run_ip_range_tool(args.range[0])
         else:
-            run_ip_range_tool(start_ip=args.range[0], end_ip=args.range[1])
+            run_ip_range_tool(args.range[0], args.range[1])
         return
     
     # Conversion mode
@@ -251,6 +260,14 @@ Examples:
             run_conversion_tool()
         else:
             run_conversion_tool(args.convert)
+        return
+    
+    # Supernetting mode
+    if args.supernet is not None:
+        if len(args.supernet) == 0:
+            run_supernet_tool()
+        else:
+            run_supernet_tool(args.supernet)
         return
     
     # Network summary only

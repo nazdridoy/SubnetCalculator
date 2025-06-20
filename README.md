@@ -17,6 +17,10 @@ A powerful command-line subnet calculator that supports both Variable Length Sub
   - IP validation and classification
   - Check if an IP is within a subnet
   - Analyze IP address ranges
+- **Supernetting/CIDR Aggregation**: Efficient route summarization:
+  - Aggregate multiple networks into optimal CIDR blocks
+  - Find the smallest common supernet
+  - Analyze common network prefixes
 - **Interactive Mode**: User-friendly interactive input with command history and editing
 - **Command-line Mode**: Scriptable operation for automation
 
@@ -107,11 +111,23 @@ Calculate information about an IP address range:
 ./subcalc --range                            # Fully interactive mode
 ```
 
+### Supernetting/CIDR Aggregation
+Aggregate multiple subnets into optimal summary routes:
+
+```bash
+# Find efficient summary routes for multiple networks
+./subcalc --supernet 192.168.1.0/24 192.168.2.0/24 192.168.3.0/24
+
+# Run in interactive mode
+./subcalc --supernet
+```
+
 ## Command-line Arguments
 
 ```
-usage: subcalc [-h] [--network NETWORK] [--vlsm [VLSM ...]] [--flsm [FLSM]] [--convert [CONVERT]] [--validate [VALIDATE]]
-               [--check-ip [CHECK_IP ...]] [--range [RANGE ...]]
+usage: subcalc [-h] [--network NETWORK] [--vlsm [VLSM ...]] [--flsm [FLSM]] [--convert [CONVERT]]
+               [--validate [VALIDATE]] [--check-ip [CHECK_IP ...]] [--range [RANGE ...]]
+               [--supernet [SUPERNET ...]]
 
 Subnet Calculator Tool - Calculate and display subnet information
 
@@ -128,6 +144,8 @@ options:
   --check-ip [CHECK_IP ...]
                         Check if an IP address is in a network (e.g., --check-ip 192.168.1.5 192.168.1.0/24)
   --range [RANGE ...]   Analyze an IP address range (e.g., --range 192.168.1.10 192.168.1.20)
+  --supernet [SUPERNET ...]
+                        Find optimal summary routes for multiple subnets (e.g., --supernet 192.168.1.0/24 192.168.2.0/24)
 
 Examples:
   ./subcalc --network 192.168.0.0/24                    # Display network summary
@@ -142,6 +160,8 @@ Examples:
   ./subcalc --validate 192.168.1.5                      # Validate an IP address and display information
   ./subcalc --check-ip 192.168.1.5 192.168.1.0/24       # Check if an IP address is in a network
   ./subcalc --range 192.168.1.10 192.168.1.20           # Analyze an IP address range
+  ./subcalc --supernet 192.168.1.0/24 192.168.2.0/24    # Find optimal summary routes for multiple subnets
+  ./subcalc --supernet                                  # Run supernetting tool in interactive mode
 ```
 
 ## Example Outputs
@@ -259,6 +279,46 @@ Optimal CIDR Block Representation:
   Block 1: 192.168.1.10/31 (2 addresses)
   Block 2: 192.168.1.12/30 (4 addresses)
   Block 3: 192.168.1.16/29 (8 addresses)
+```
+
+### Supernetting Output
+```
+Supernetting Results:
+Input Networks (3):
+  1. 192.168.1.0/24 (256 addresses)
+     Binary: 11000000.10101000.00000001.00000000
+     Prefix: 11111111.11111111.11111111.00000000
+  2. 192.168.2.0/24 (256 addresses)
+     Binary: 11000000.10101000.00000010.00000000
+     Prefix: 11111111.11111111.11111111.00000000
+  3. 192.168.3.0/24 (256 addresses)
+     Binary: 11000000.10101000.00000011.00000000
+     Prefix: 11111111.11111111.11111111.00000000
+
+1. Efficient Aggregation (Multiple Blocks)
+   Result: 2 CIDR block(s)
+     Block 1: 192.168.1.0/24 (256 addresses)
+            Binary: 11000000.10101000.00000001.00000000
+            Prefix: 11111111.11111111.11111111.00000000
+     Block 2: 192.168.2.0/23 (512 addresses)
+            Binary: 11000000.10101000.0000001|0.00000000
+            Prefix: 11111111.11111111.11111110.00000000
+   Total Addresses: 768
+
+2. Single Supernet (Summary Route)
+   Result: 192.168.0.0/22 (1024 addresses)
+          Binary: 11000000.10101000.000000|00.00000000
+          Prefix: 11111111.11111111.11111100.00000000
+   Address Waste: 256 addresses (25.0%)
+
+3. Common Prefix Analysis
+   Common Prefix: 22 bits
+   Common Network: 192.168.0.0/22
+   Prefix Mask:  NNNNNNNN.NNNNNNNN.NNNNNNHH.HHHHHHHH
+                 N = Network bits (match), H = Host bits (vary)
+   Binary Form:  11000000.10101000.00000000.00000000
+   Address Range: 192.168.0.0 - 192.168.3.255
+   Total Range:   1024 addresses
 ```
 
 ## Author
