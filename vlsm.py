@@ -1,10 +1,12 @@
 import ipaddress
+from utils.network import validate_network, calculate_required_prefix_length
+from utils.format import format_subnet_info, print_table
 
 def get_subnet_info(network, hosts_required):
     try:
-        network_address = ipaddress.ip_network(network, strict=False)
-    except ValueError:
-        raise ValueError("Invalid base subnet address. Please provide a valid subnet in CIDR notation.")
+        network_address = validate_network(network)
+    except ValueError as e:
+        raise ValueError(str(e))
 
     # Calculate number of hosts per subnet
     subnets = []
@@ -14,7 +16,7 @@ def get_subnet_info(network, hosts_required):
         if needed_subnet_size > network_address.num_addresses:
             raise ValueError(f"The HostID is too small for the number of hosts specified ({needed_subnet_size - 2}). Reduce the NetID bits, then retry!")
         
-        subnet_prefix = 32 - (needed_subnet_size - 1).bit_length()
+        subnet_prefix = calculate_required_prefix_length(hosts)
         total_hosts = 2 ** (32 - subnet_prefix) - 2  # subtract 2 for network and broadcast addresses
         
         # Additional check for minimum subnet prefix to handle oversized requests
@@ -42,38 +44,5 @@ def get_subnet_info(network, hosts_required):
     return allocated_subnets
 
 def display_subnet_info(subnet_info):
-    subnet, needed_hosts, total_hosts = subnet_info
-    return [
-        f"{subnet}",
-        f"{subnet.netmask}",
-        f"{subnet.network_address}",
-        f"{subnet.broadcast_address}",
-        f"{subnet.network_address + 1}",
-        f"{subnet.broadcast_address - 1}",
-        f"{needed_hosts}",
-        f"{total_hosts}"
-    ]
-
-def print_table(data):
-    # Calculate the width of each column
-    col_widths = [max(len(str(item)) for item in col) for col in zip(*data)]
-    
-    # Create a horizontal line
-    def print_horizontal_line():
-        line = "+"
-        for width in col_widths:
-            line += "-" * (width + 2) + "+"
-        print(line)
-    
-    # Print the table
-    def print_row(row):
-        line = "|"
-        for i, item in enumerate(row):
-            line += " " + str(item).ljust(col_widths[i]) + " |"
-        print(line)
-
-    print_horizontal_line()
-    for row in data:
-        print_row(row)
-        print_horizontal_line()
+    return format_subnet_info(subnet_info, is_flsm=False)
 

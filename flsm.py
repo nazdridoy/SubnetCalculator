@@ -1,4 +1,6 @@
 import ipaddress
+from utils.network import validate_network, calculate_subnet_bits, calculate_hosts_per_subnet
+from utils.format import format_subnet_info
 
 def get_subnet_info(network, num_subnets):
     """
@@ -13,12 +15,12 @@ def get_subnet_info(network, num_subnets):
         List of subnet information tuples (subnet, index, total_hosts)
     """
     try:
-        network_address = ipaddress.ip_network(network, strict=False)
-    except ValueError:
-        raise ValueError("Invalid base subnet address. Please provide a valid subnet in CIDR notation.")
+        network_address = validate_network(network)
+    except ValueError as e:
+        raise ValueError(str(e))
     
     # Calculate required bits for the specified number of subnets
-    subnet_bits = (num_subnets - 1).bit_length()
+    subnet_bits = calculate_subnet_bits(num_subnets)
     orig_prefix_len = network_address.prefixlen
     new_prefix_len = orig_prefix_len + subnet_bits
     
@@ -26,7 +28,7 @@ def get_subnet_info(network, num_subnets):
         raise ValueError(f"Cannot create {num_subnets} subnets. The resulting prefix length would be /{new_prefix_len}, which is too small.")
     
     # Number of hosts per subnet
-    hosts_per_subnet = 2 ** (32 - new_prefix_len) - 2  # subtract 2 for network and broadcast addresses
+    hosts_per_subnet = calculate_hosts_per_subnet(new_prefix_len)
     
     # Create the subnets
     allocated_subnets = []
@@ -51,9 +53,9 @@ def get_subnet_info_by_prefix(network, new_prefix):
         List of subnet information tuples (subnet, index, total_hosts)
     """
     try:
-        network_address = ipaddress.ip_network(network, strict=False)
-    except ValueError:
-        raise ValueError("Invalid base subnet address. Please provide a valid subnet in CIDR notation.")
+        network_address = validate_network(network)
+    except ValueError as e:
+        raise ValueError(str(e))
     
     # Validate the new prefix
     orig_prefix_len = network_address.prefixlen
@@ -64,7 +66,7 @@ def get_subnet_info_by_prefix(network, new_prefix):
         raise ValueError(f"Prefix /{new_prefix} is too small. The smallest supported prefix is /30.")
     
     # Number of hosts per subnet
-    hosts_per_subnet = 2 ** (32 - new_prefix) - 2  # subtract 2 for network and broadcast addresses
+    hosts_per_subnet = calculate_hosts_per_subnet(new_prefix)
     
     # Create the subnets
     allocated_subnets = []
@@ -82,16 +84,4 @@ def get_subnet_info_by_prefix(network, new_prefix):
 
 def display_subnet_info(subnet_info):
     """Format subnet information for display in a table."""
-    subnet, index, total_hosts = subnet_info
-    return [
-        f"Subnet {index}",
-        f"{subnet}",
-        f"{subnet.netmask}",
-        f"{subnet.network_address}",
-        f"{subnet.broadcast_address}",
-        f"{subnet.network_address + 1}",
-        f"{subnet.broadcast_address - 1}",
-        f"{total_hosts}"
-    ]
-
-# We'll use the print_table function from vlsm.py, so no need to reimplement it here 
+    return format_subnet_info(subnet_info, is_flsm=True)

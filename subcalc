@@ -7,26 +7,32 @@ try:
 except ImportError:
     # readline is not available on all platforms (like Windows without additional packages)
     pass
-from vlsm import get_subnet_info as get_vlsm_subnet_info, display_subnet_info as display_vlsm_subnet_info, print_table
+from vlsm import get_subnet_info as get_vlsm_subnet_info, display_subnet_info as display_vlsm_subnet_info
 from flsm import get_subnet_info as get_flsm_subnet_info, get_subnet_info_by_prefix as get_flsm_subnet_info_by_prefix, display_subnet_info as display_flsm_subnet_info
 from notation import run_conversion_tool
 from iputility import run_ip_validation_tool, run_ip_in_network_tool, run_ip_range_tool
 from supernet import run_supernet_tool
+from utils.format import print_table
+from utils.network import display_network_summary as get_network_summary
 
 def display_network_summary(network):
     """Display summary information about a network"""
     try:
-        network_obj = ipaddress.ip_network(network, strict=False)
-        print(f"\nNetwork Summary for {network_obj}:")
-        print(f"Network Address:     {network_obj.network_address}")
-        print(f"Broadcast Address:   {network_obj.broadcast_address}")
-        print(f"Netmask:             {network_obj.netmask}")
-        print(f"Prefix Length:       /{network_obj.prefixlen}")
-        print(f"Number of Addresses: {network_obj.num_addresses}")
-        print(f"Usable Hosts:        {network_obj.num_addresses - 2}")
-        print(f"First Usable Host:   {network_obj.network_address + 1}")
-        print(f"Last Usable Host:    {network_obj.broadcast_address - 1}")
-    except ValueError as e:
+        summary = get_network_summary(network)
+        if "error" in summary:
+            print(f"\nError: {summary['error']}")
+            return
+            
+        print(f"\nNetwork Summary for {summary['network']}:")
+        print(f"Network Address:     {summary['network_address']}")
+        print(f"Broadcast Address:   {summary['broadcast_address']}")
+        print(f"Netmask:             {summary['netmask']}")
+        print(f"Prefix Length:       {summary['prefix_length']}")
+        print(f"Number of Addresses: {summary['num_addresses']}")
+        print(f"Usable Hosts:        {summary['usable_hosts']}")
+        print(f"First Usable Host:   {summary['first_usable']}")
+        print(f"Last Usable Host:    {summary['last_usable']}")
+    except Exception as e:
         print(f"Error: {e}")
 
 def run_vlsm_tool(network=None, hosts_required=None):
