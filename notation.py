@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from utils.conversion import convert_notation
+import ipaddress
 
 def run_conversion_tool(input_str=None):
     """Run the notation conversion tool interactively or with provided input"""
@@ -13,10 +14,34 @@ def run_conversion_tool(input_str=None):
             print(f"\nError: {result['error']}")
             return
         
-        print(f"\nConversion Results for {input_str} ({result['notation_type']}):")
-        print(f"CIDR Notation:      {result['cidr']}")
+        # Extract prefix length for additional calculations
+        prefix_length = int(result['cidr'].strip('/'))
+        
+        # Calculate binary mask representation
+        subnet_mask = result['subnet_mask']
+        network_obj = ipaddress.IPv4Network(f"0.0.0.0/{prefix_length}", strict=False)
+        binary_mask = ''.join(bin(int(x))[2:].zfill(8) for x in subnet_mask.split('.'))
+        formatted_binary = '.'.join(binary_mask[i:i+8] for i in range(0, 32, 8))
+        
+        # Calculate hex mask
+        mask_int = int(network_obj.netmask)
+        hex_mask = format(mask_int, '08X')
+        
+        # Calculate host and address information
+        host_bits = 32 - prefix_length
+        max_addresses = 2 ** host_bits
+        usable_hosts = max_addresses - 2 if prefix_length < 31 else max_addresses
+        
+        print(f"\nNotation Conversion Results:")
+        print(f"\nCIDR Notation:      {result['cidr']}")
         print(f"Subnet Mask:        {result['subnet_mask']}")
         print(f"Wildcard Mask:      {result['wildcard_mask']}")
+        print(f"Binary Mask:        {formatted_binary}")
+        print(f"Hex Mask:           {hex_mask}")
+        print(f"Network Bits:       {prefix_length}")
+        print(f"Host Bits:          {host_bits}")
+        print(f"Max Addresses:      {max_addresses}")
+        print(f"Usable Hosts:       {usable_hosts}")
     
     except KeyboardInterrupt:
         print("\nOperation cancelled by user.")
