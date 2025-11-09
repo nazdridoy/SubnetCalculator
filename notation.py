@@ -15,7 +15,7 @@ def run_conversion_tool(input_str=None):
             return
         
         # Extract prefix length for additional calculations
-        prefix_length = int(result['cidr'].strip('/'))
+        prefix_length = int(result['cidr'].split('/')[-1])
         
         # Calculate binary mask representation
         subnet_mask = result['subnet_mask']

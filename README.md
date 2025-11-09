@@ -61,7 +61,8 @@ Create equal-sized subnets in two ways:
 
 2. By specific prefix length:
 ```bash
-./subcalc --network 192.168.0.0/24 --flsm /28
+./subcalc --network 192.168.0.0/24 --flsm /28         # Linux/macOS
+./subcalc --network 192.168.0.0/24 --flsm cidr/28     # Windows compatible
 ```
 
 ### VLSM Subnet Calculation
@@ -81,7 +82,8 @@ Run the tool interactively:
 Convert between CIDR, subnet mask, and wildcard mask notations:
 
 ```bash
-./subcalc --convert /24               # Convert from CIDR notation
+./subcalc --convert /24               # Convert from CIDR notation (Linux/macOS)
+./subcalc --convert cidr/24           # Convert from CIDR notation (Windows compatible)
 ./subcalc --convert 255.255.255.0     # Convert from subnet mask notation
 ./subcalc --convert 0.0.0.255         # Convert from wildcard mask notation
 ./subcalc --convert                   # Run in interactive mode
@@ -139,10 +141,8 @@ options:
   -h, --help            show this help message and exit
   --network NETWORK     Base network address in CIDR notation (e.g., 192.168.0.0/24)
   --vlsm [VLSM ...]     Run Variable Length Subnet Mask calculator with specified host requirements (e.g., --vlsm 20 40 80)
-  --flsm [FLSM]         Run Fixed Length Subnet Mask calculator with either number of subnets (e.g., --flsm 4) or target prefix length
-                        (e.g., --flsm /28)
-  --convert [CONVERT]   Convert between CIDR notation, subnet masks, and wildcard masks (e.g., --convert /24 or --convert
-                        255.255.255.0)
+  --flsm [FLSM]         Run Fixed Length Subnet Mask calculator with number of subnets (e.g., --flsm 4) or target prefix length (e.g., --flsm /28 or --flsm cidr/28)
+  --convert [CONVERT]   Convert between CIDR, subnet, and wildcard masks (e.g., --convert /24 or --convert cidr/24 or --convert 255.255.255.0)
   --validate [VALIDATE]
                         Validate an IP address and show its properties (e.g., --validate 192.168.1.1)
   --check-ip [CHECK_IP ...]
@@ -154,11 +154,13 @@ options:
 Examples:
   ./subcalc --network 192.168.0.0/24                    # Display network summary
   ./subcalc --network 192.168.0.0/24 --flsm 16          # Create 16 equal-sized subnets
-  ./subcalc --network 192.168.0.0/24 --flsm /28         # Create subnets with prefix /28
+  ./subcalc --network 192.168.0.0/24 --flsm /28         # Create subnets with prefix /28 (Linux/macOS)
+  ./subcalc --network 192.168.0.0/24 --flsm cidr/28     # Create subnets with prefix /28 (Windows compatible)
   ./subcalc --network 192.168.0.0/24 --vlsm 20 40 50    # Create subnets with specified host capacities
   ./subcalc --flsm                                      # Run FLSM in interactive mode
   ./subcalc --vlsm                                      # Run VLSM in interactive mode
-  ./subcalc --convert /24                               # Convert between CIDR, subnet mask, and wildcard mask
+  ./subcalc --convert /24                               # Convert between CIDR, subnet mask, and wildcard mask (Linux/macOS)
+  ./subcalc --convert cidr/24                           # Convert between CIDR, subnet mask, and wildcard mask (Windows compatible)
   ./subcalc --convert 255.255.255.0                     # Convert between notations using subnet mask
   ./subcalc --convert                                   # Run conversion tool in interactive mode
   ./subcalc --validate 192.168.1.5                      # Validate an IP address and display information

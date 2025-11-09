@@ -145,8 +145,8 @@ def detect_notation_type(input_str):
     """
     input_str = input_str.strip()
     
-    # Check for CIDR notation
-    if input_str.startswith('/'):
+    # Check for CIDR notation (e.g., /24 or cidr/24)
+    if input_str.startswith('/') or input_str.lower().startswith('cidr/'):
         return "cidr"
     
     # Check for just a number (interpreted as CIDR prefix length)
@@ -189,6 +189,7 @@ def convert_notation(input_str):
     Returns:
         Dictionary with converted notation in all formats
     """
+    input_str = input_str.strip()
     notation_type = detect_notation_type(input_str)
     
     if notation_type == "unknown":
@@ -200,7 +201,11 @@ def convert_notation(input_str):
     
     # Process CIDR notation
     if notation_type == "cidr":
-        prefix_length = input_str.strip('/')
+        if input_str.lower().startswith('cidr/'):
+            prefix_length = input_str.split('/')[-1]
+        else:
+            prefix_length = input_str.strip('/')
+            
         result["notation_type"] = "CIDR"
         result["cidr"] = f"/{prefix_length}"
         result["subnet_mask"] = cidr_to_subnet_mask(prefix_length)

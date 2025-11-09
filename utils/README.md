@@ -33,8 +33,8 @@ Utilities for converting between different IP notation formats.
 - `wildcard_to_subnet_mask(wildcard_mask)`: Convert wildcard mask to subnet mask
 - `cidr_to_wildcard(prefix_length)`: Convert CIDR prefix length to wildcard mask
 - `wildcard_to_cidr(wildcard_mask)`: Convert wildcard mask to CIDR prefix length
-- `detect_notation_type(input_str)`: Detect if input is CIDR, subnet mask, or wildcard mask
-- `convert_notation(input_str)`: Convert between CIDR, subnet mask, and wildcard mask notations
+- `detect_notation_type(input_str)`: Detect if input is CIDR (e.g., /24 or cidr/24), subnet mask, or wildcard mask
+- `convert_notation(input_str)`: Convert between CIDR (including cidr/ prefix), subnet mask, and wildcard mask notations
 
 ### format.py
 

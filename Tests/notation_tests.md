@@ -164,4 +164,33 @@ Usable Hosts:       254
 | Test 7    | CIDR notation  | /30              | Small subnet info   |
 | Test 8    | CIDR notation  | /19              | Non-octet-aligned   |
 | Test 9    | Invalid CIDR   | /33              | Error message       |
-| Test 10   | Invalid mask   | 255.255.255.1    | Error message       | 
+| Test 10   | Invalid mask   | 255.255.255.1    | Error message       |
+| Test 11   | CIDR notation  | cidr/24          | Subnet mask, wildcard|
+
+### Test 11: CIDR with 'cidr/' prefix
+
+```bash
+./subcalc --convert cidr/24
+```
+
+**Expected Results:**
+* Conversion of CIDR notation cidr/24 to:
+  * Subnet mask: 255.255.255.0
+  * Wildcard mask: 0.0.0.255
+  * Binary representation: 11111111.11111111.11111111.00000000
+  * Number of addresses: 256
+
+**Sample Output:**
+```
+Notation Conversion Results:
+
+CIDR Notation:      /24
+Subnet Mask:        255.255.255.0
+Wildcard Mask:      0.0.0.255
+Binary Mask:        11111111.11111111.11111111.00000000
+Hex Mask:           FFFFFF00
+Network Bits:       24
+Host Bits:          8
+Max Addresses:      256
+Usable Hosts:       254
+``` 
