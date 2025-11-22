@@ -53,7 +53,7 @@ Unused Subnets:       0
 
 ```bash
 ./subcalc --network 192.168.0.0/24 --flsm /28
-./subcalc --network 192.168.0.0/24 --flsm cidr/28
+
 ```
 
 **Expected Results:**
@@ -188,7 +188,7 @@ Created Subnets:      16
 |-----------|--------------------------|-------------------------------------|
 | Test 1    | Basic FLSM by count      | 4 equal /26 subnets                 |
 | Test 2    | FLSM by prefix           | 16 equal /28 subnets                |
-|           | FLSM by prefix (cidr/)   | 16 equal /28 subnets                |
+
 | Test 3    | Class B network          | 8 equal /19 subnets                 |
 | Test 4    | Small subnets            | 64 equal /30 subnets                |
 | Test 5    | Exceeding capacity       | Error message                       |

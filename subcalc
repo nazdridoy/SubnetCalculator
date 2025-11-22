@@ -74,19 +74,16 @@ def run_flsm_tool(network=None, subnet_input=None):
             network = input("Enter the base subnet address (e.g., 192.168.0.0/24): ")
         
         if subnet_input is None:
-            subnet_input = input("Enter the number of subnets to create OR prefix length (e.g., 16 or /28 or cidr/28): ")
+            subnet_input = input("Enter the number of subnets to create OR prefix length (e.g., 16 or /28): ")
         
         # Process the input to determine if it's a number of subnets or a prefix length
         by_prefix = False
-        if isinstance(subnet_input, str) and (subnet_input.startswith('/') or 'cidr/' in subnet_input.lower()):
+        if isinstance(subnet_input, str) and subnet_input.startswith('/'):
             try:
-                if subnet_input.startswith('/'):
-                    prefix_length = int(subnet_input[1:])
-                else:
-                    prefix_length = int(subnet_input.split('/')[-1])
+                prefix_length = int(subnet_input[1:])
                 by_prefix = True
             except (ValueError, IndexError):
-                print("Invalid prefix length. Please provide a number after the '/' or 'cidr/' prefix.")
+                print("Invalid prefix length. Please provide a number after the '/' prefix.")
                 return
         else:
             try:
@@ -95,7 +92,7 @@ def run_flsm_tool(network=None, subnet_input=None):
                     print("Number of subnets must be greater than 0.")
                     return
             except ValueError:
-                print("Invalid input. Please provide either a number of subnets or a prefix length (e.g., 16 or /28 or cidr/28).")
+                print("Invalid input. Please provide either a number of subnets or a prefix length (e.g., 16 or /28).")
                 return
         
         try:
@@ -164,13 +161,11 @@ def main():
 Examples:
   ./subcalc --network 192.168.0.0/24                    # Display network summary
   ./subcalc --network 192.168.0.0/24 --flsm 16          # Create 16 equal-sized subnets
-  ./subcalc --network 192.168.0.0/24 --flsm /28         # Create subnets with prefix /28 (Linux/macOS)
-  ./subcalc --network 192.168.0.0/24 --flsm cidr/28     # Create subnets with prefix /28 (Windows compatible)
+  ./subcalc --network 192.168.0.0/24 --flsm /28         # Create subnets with prefix /28
   ./subcalc --network 192.168.0.0/24 --vlsm 20 40 50    # Create subnets with specified host capacities
   ./subcalc --flsm                                      # Run FLSM in interactive mode
   ./subcalc --vlsm                                      # Run VLSM in interactive mode
-  ./subcalc --convert /24                               # Convert between CIDR, subnet mask, and wildcard mask (Linux/macOS)
-  ./subcalc --convert cidr/24                           # Convert between CIDR, subnet mask, and wildcard mask (Windows compatible)
+  ./subcalc --convert /24                               # Convert between CIDR, subnet mask, and wildcard mask
   ./subcalc --convert 255.255.255.0                     # Convert between notations using subnet mask
   ./subcalc --convert                                   # Run conversion tool in interactive mode
   ./subcalc --validate 192.168.1.5                      # Validate an IP address and display information
@@ -179,7 +174,8 @@ Examples:
   ./subcalc --supernet 192.168.1.0/24 192.168.2.0/24    # Find optimal summary routes for multiple subnets
   ./subcalc --supernet                                  # Run supernetting tool in interactive mode
         """,
-        formatter_class=argparse.RawDescriptionHelpFormatter  # This preserves formatting in the epilog
+        formatter_class=argparse.RawDescriptionHelpFormatter,  # This preserves formatting in the epilog
+        prefix_chars='-'  # Explicitly set to avoid Windows issues with / being interpreted as a flag
     )
     
     parser.add_argument(
@@ -199,14 +195,14 @@ Examples:
         "--flsm", 
         nargs='?', 
         const='interactive', 
-        help="Run Fixed Length Subnet Mask calculator with number of subnets (e.g., --flsm 4) or target prefix length (e.g., --flsm /28 or --flsm cidr/28)"
+        help="Run Fixed Length Subnet Mask calculator with number of subnets (e.g., --flsm 4) or target prefix length (e.g., --flsm /28)"
     )
     
     parser.add_argument(
         "--convert",
         nargs='?',
         const='interactive',
-        help="Convert between CIDR, subnet, and wildcard masks (e.g., --convert /24 or --convert cidr/24 or --convert 255.255.255.0)"
+        help="Convert between CIDR, subnet, and wildcard masks (e.g., --convert /24 or --convert 255.255.255.0)"
     )
     
     # IP Address Utility arguments

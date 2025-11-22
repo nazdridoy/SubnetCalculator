@@ -145,8 +145,8 @@ def detect_notation_type(input_str):
     """
     input_str = input_str.strip()
     
-    # Check for CIDR notation (e.g., /24 or cidr/24)
-    if input_str.startswith('/') or input_str.lower().startswith('cidr/'):
+    # Check for CIDR notation (e.g., /24)
+    if input_str.startswith('/'):
         return "cidr"
     
     # Check for just a number (interpreted as CIDR prefix length)
@@ -201,10 +201,7 @@ def convert_notation(input_str):
     
     # Process CIDR notation
     if notation_type == "cidr":
-        if input_str.lower().startswith('cidr/'):
-            prefix_length = input_str.split('/')[-1]
-        else:
-            prefix_length = input_str.strip('/')
+        prefix_length = input_str.strip('/')
             
         result["notation_type"] = "CIDR"
         result["cidr"] = f"/{prefix_length}"

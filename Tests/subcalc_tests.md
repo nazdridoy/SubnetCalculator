@@ -63,7 +63,7 @@ Last Usable Host:    192.168.0.254
 
 ```bash
 ./subcalc --network 192.168.0.0/24 --flsm /28
-./subcalc --network 192.168.0.0/24 --flsm cidr/28
+
 ```
 
 **Expected Results:**
@@ -217,7 +217,7 @@ python3.8 subcalc --network 192.168.0.0/24
 | Test 2    | --help                                         | Help text display                      |
 | Test 3    | --network 192.168.0.0/24 --flsm 4             | 4 equal-sized subnets                 |
 | Test 4    | --network 192.168.0.0/24 --flsm /28           | Subnets with /28 prefix               |
-|           | --network 192.168.0.0/24 --flsm cidr/28       | Subnets with /28 prefix               |
+
 | Test 5    | --network 192.168.0.0/24 --vlsm 100 50 25 10  | Subnets for host requirements         |
 | Test 6    | --flsm (interactive)                           | Interactive FLSM calculation          |
 | Test 7    | --vlsm (interactive)                           | Interactive VLSM calculation          |
