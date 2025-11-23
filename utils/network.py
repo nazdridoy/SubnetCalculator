@@ -3,6 +3,7 @@ Network calculation utilities.
 """
 import ipaddress
 from typing import List, Tuple, Union, Dict, Any, Optional
+from constants import POINT_TO_POINT_PREFIX, HOST_PREFIX, NETWORK_AND_BROADCAST_OVERHEAD
 
 def validate_network(network: str) -> ipaddress.IPv4Network:
     """
@@ -32,10 +33,10 @@ def calculate_hosts_per_subnet(prefix_length: int) -> int:
     Returns:
         Number of usable hosts (excluding network and broadcast addresses)
     """
-    if prefix_length >= 31:
+    if prefix_length >= POINT_TO_POINT_PREFIX:
         # Special case for /31 networks (RFC 3021) and /32 (single host)
-        return 2 if prefix_length == 31 else 1
-    return 2 ** (32 - prefix_length) - 2
+        return 2 if prefix_length == POINT_TO_POINT_PREFIX else 1
+    return 2 ** (32 - prefix_length) - NETWORK_AND_BROADCAST_OVERHEAD
 
 def calculate_required_prefix_length(hosts_required: int) -> int:
     """
@@ -48,7 +49,7 @@ def calculate_required_prefix_length(hosts_required: int) -> int:
         Required prefix length
     """
     # Add 2 for network and broadcast addresses
-    needed_subnet_size = hosts_required + 2
+    needed_subnet_size = hosts_required + NETWORK_AND_BROADCAST_OVERHEAD
     
     # Calculate required prefix length
     return 32 - (needed_subnet_size - 1).bit_length()
@@ -72,9 +73,9 @@ def display_network_summary(network: str) -> Dict[str, Any]:
             "netmask": str(network_obj.netmask),
             "prefix_length": f"/{network_obj.prefixlen}",
             "num_addresses": network_obj.num_addresses,
-            "usable_hosts": network_obj.num_addresses - 2 if network_obj.prefixlen < 31 else network_obj.num_addresses,
-            "first_usable": str(network_obj.network_address + 1) if network_obj.prefixlen < 31 else str(network_obj.network_address),
-            "last_usable": str(network_obj.broadcast_address - 1) if network_obj.prefixlen < 31 else str(network_obj.broadcast_address) if network_obj.prefixlen == 31 else str(network_obj.network_address)
+            "usable_hosts": network_obj.num_addresses - NETWORK_AND_BROADCAST_OVERHEAD if network_obj.prefixlen < POINT_TO_POINT_PREFIX else network_obj.num_addresses,
+            "first_usable": str(network_obj.network_address + 1) if network_obj.prefixlen < POINT_TO_POINT_PREFIX else str(network_obj.network_address),
+            "last_usable": str(network_obj.broadcast_address - 1) if network_obj.prefixlen < POINT_TO_POINT_PREFIX else str(network_obj.broadcast_address) if network_obj.prefixlen == POINT_TO_POINT_PREFIX else str(network_obj.network_address)
         }
         return summary
     except ValueError as e:

@@ -2,8 +2,19 @@
 IP address validation utilities.
 """
 import ipaddress
+from typing import Dict, Any
+from constants import (
+    CLASS_A_START, CLASS_A_END,
+    CLASS_B_START, CLASS_B_END,
+    CLASS_C_START, CLASS_C_END,
+    CLASS_D_START, CLASS_D_END,
+    CLASS_E_START, CLASS_E_END,
+    LOOPBACK
+)
+from utils.binary import int_to_binary
 
-def validate_ip(ip_address):
+
+def validate_ip(ip_address: str) -> Dict[str, Any]:
     """
     Validate if a string is a valid IPv4 address
     Returns a dictionary with validation status and details
@@ -14,7 +25,7 @@ def validate_ip(ip_address):
     Returns:
         Dictionary with validation results and IP information
     """
-    result = {"valid": False, "error": None, "binary": None, "class": None, "type": None}
+    result: Dict[str, Any] = {"valid": False, "error": None, "binary": None, "class": None, "type": None}
     
     try:
         # Try to create an IPv4Address object
@@ -22,7 +33,7 @@ def validate_ip(ip_address):
         result["valid"] = True
         
         # Get binary representation
-        binary = bin(int(ip))[2:].zfill(32)
+        binary = int_to_binary(int(ip), 32)
         result["binary"] = ".".join(binary[i:i+8] for i in range(0, 32, 8))
         
         # Get hex representation
@@ -37,18 +48,18 @@ def validate_ip(ip_address):
         
         # Determine IP class
         first_octet = int(ip_address.split('.')[0])
-        if 1 <= first_octet <= 126:
-            result["class"] = "Class A (1-126)"
-        elif 128 <= first_octet <= 191:
-            result["class"] = "Class B (128-191)"
-        elif 192 <= first_octet <= 223:
-            result["class"] = "Class C (192-223)"
-        elif 224 <= first_octet <= 239:
-            result["class"] = "Class D (Multicast) (224-239)"
-        elif 240 <= first_octet <= 255:
-            result["class"] = "Class E (Reserved) (240-255)"
-        elif first_octet == 127:
-            result["class"] = "Loopback (127)"
+        if CLASS_A_START <= first_octet <= CLASS_A_END:
+            result["class"] = f"Class A ({CLASS_A_START}-{CLASS_A_END})"
+        elif CLASS_B_START <= first_octet <= CLASS_B_END:
+            result["class"] = f"Class B ({CLASS_B_START}-{CLASS_B_END})"
+        elif CLASS_C_START <= first_octet <= CLASS_C_END:
+            result["class"] = f"Class C ({CLASS_C_START}-{CLASS_C_END})"
+        elif CLASS_D_START <= first_octet <= CLASS_D_END:
+            result["class"] = f"Class D (Multicast) ({CLASS_D_START}-{CLASS_D_END})"
+        elif CLASS_E_START <= first_octet <= CLASS_E_END:
+            result["class"] = f"Class E (Reserved) ({CLASS_E_START}-{CLASS_E_END})"
+        elif first_octet == LOOPBACK:
+            result["class"] = f"Loopback ({LOOPBACK})"
         
         # Set default values for range_info and comm_type
         result["range_info"] = "No specific range information available"

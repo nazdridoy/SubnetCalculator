@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import ipaddress
+from typing import List, Tuple, Optional
+from constants import LARGE_NETWORK_THRESHOLD
 from utils.binary import get_binary_ip, format_binary_ip, ip_to_binary_visual, create_prefix_binary_mask
 from utils.network import get_common_prefix
 
@@ -97,10 +99,16 @@ def find_supernet(networks):
     # Return the supernet in CIDR notation
     return f"{network}/{mask_bits}"
 
-def check_network_overlap(networks):
+def check_network_overlap(networks: List[str]) -> Tuple[bool, int]:
     """
-    Check if networks overlap and calculate the amount of overlap
-    Returns a tuple of (has_overlap, overlap_addresses)
+    Check if networks overlap and calculate the amount of overlap.
+    Uses optimized algorithm based on network size.
+    
+    Args:
+        networks: List of networks in CIDR notation
+        
+    Returns:
+        Tuple of (has_overlap, overlap_addresses)
     """
     if not networks or len(networks) < 2:
         return False, 0
@@ -111,11 +119,14 @@ def check_network_overlap(networks):
         try:
             network = ipaddress.ip_network(net, strict=False)
             valid_networks.append(network)
-        except ValueError:
+        except (ValueError, TypeError):
             continue
     
+    if not valid_networks or len(valid_networks) < 2:
+        return False, 0
+    
     # For small to medium networks, use direct IP counting
-    if all(net.num_addresses <= 65536 for net in valid_networks):
+    if all(net.num_addresses <= LARGE_NETWORK_THRESHOLD for net in valid_networks):
         # Count unique IPs
         unique_ips = set()
         for net in valid_networks:
@@ -129,19 +140,42 @@ def check_network_overlap(networks):
         
         return overlap > 0, overlap
     else:
-        # For large networks, just check containment relationships
-        for i, net1 in enumerate(valid_networks):
-            for j, net2 in enumerate(valid_networks):
-                if i != j:
-                    if net1.overlaps(net2):
-                        return True, 0  # Just indicate overlap without calculating exact size
-    
-    return False, 0
+        # For large networks, use mathematical overlap detection
+        # Sort networks by network address for efficient comparison
+        sorted_networks = sorted(valid_networks, key=lambda x: int(x.network_address))
+        
+        has_overlap = False
+        for i in range(len(sorted_networks) - 1):
+            current = sorted_networks[i]
+            next_net = sorted_networks[i + 1]
+            
+            # Check if current network's broadcast overlaps with next network's start
+            if int(current.broadcast_address) >= int(next_net.network_address):
+                has_overlap = True
+                break
+        
+        # Also check for containment (one network inside another)
+        if not has_overlap:
+            for i, net1 in enumerate(sorted_networks):
+                for j, net2 in enumerate(sorted_networks):
+                    if i != j and (net1.subnet_of(net2) or net2.subnet_of(net1)):
+                        has_overlap = True
+                        break
+                if has_overlap:
+                    break
+        
+        return has_overlap, 0  # For large networks, don't calculate exact overlap
 
-def calculate_unique_addresses(networks):
+def calculate_unique_addresses(networks: List[str]) -> int:
     """
     Calculate the total number of unique addresses across all networks,
-    accounting for overlaps
+    accounting for overlaps.
+    
+    Args:
+        networks: List of networks in CIDR notation
+        
+    Returns:
+        Total number of unique addresses
     """
     if not networks:
         return 0
@@ -152,11 +186,11 @@ def calculate_unique_addresses(networks):
         try:
             network = ipaddress.ip_network(net, strict=False)
             valid_networks.append(network)
-        except ValueError:
+        except (ValueError, TypeError):
             continue
     
     # For large networks, estimate without creating sets of all IPs
-    if any(net.num_addresses > 65536 for net in valid_networks):
+    if any(net.num_addresses > LARGE_NETWORK_THRESHOLD for net in valid_networks):
         # Sort networks by size (largest first)
         valid_networks.sort(key=lambda x: x.num_addresses, reverse=True)
         

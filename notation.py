@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from utils.conversion import convert_notation
+from utils.binary import int_to_binary
 import ipaddress
 
 def run_conversion_tool(input_str=None):
@@ -20,7 +21,7 @@ def run_conversion_tool(input_str=None):
         # Calculate binary mask representation
         subnet_mask = result['subnet_mask']
         network_obj = ipaddress.IPv4Network(f"0.0.0.0/{prefix_length}", strict=False)
-        binary_mask = ''.join(bin(int(x))[2:].zfill(8) for x in subnet_mask.split('.'))
+        binary_mask = int_to_binary(int(network_obj.netmask), 32)
         formatted_binary = '.'.join(binary_mask[i:i+8] for i in range(0, 32, 8))
         
         # Calculate hex mask

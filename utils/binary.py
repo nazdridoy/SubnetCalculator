@@ -2,8 +2,24 @@
 Binary representation utilities for IP addresses.
 """
 import ipaddress
+from constants import BITS_PER_OCTET, OCTETS_IN_IPV4, BITS_IN_IPV4
 
-def get_binary_ip(network):
+
+def int_to_binary(value: int, bit_width: int = BITS_IN_IPV4) -> str:
+    """
+    Convert an integer to a binary string with specified width.
+    
+    Args:
+        value: Integer value to convert
+        bit_width: Width of the binary string (default: 32 bits for IPv4)
+        
+    Returns:
+        Binary string representation
+    """
+    return bin(value)[2:].zfill(bit_width)
+
+
+def get_binary_ip(network: str) -> str:
     """
     Convert network address to binary string representation
     
@@ -16,11 +32,12 @@ def get_binary_ip(network):
     try:
         net_obj = ipaddress.ip_network(network, strict=False)
         ip_int = int(net_obj.network_address)
-        return bin(ip_int)[2:].zfill(32)
-    except ValueError:
+        return int_to_binary(ip_int, BITS_IN_IPV4)
+    except (ValueError, TypeError):
         return None
 
-def format_binary_ip(binary_str):
+
+def format_binary_ip(binary_str: str) -> str:
     """
     Format a 32-bit binary string with dots for readability
     
@@ -30,9 +47,9 @@ def format_binary_ip(binary_str):
     Returns:
         Formatted string with dots between octets (e.g., '11000000.10101000.00000001.00000000')
     """
-    return '.'.join(binary_str[i:i+8] for i in range(0, 32, 8))
+    return '.'.join(binary_str[i:i+BITS_PER_OCTET] for i in range(0, BITS_IN_IPV4, BITS_PER_OCTET))
 
-def ip_to_binary_visual(network):
+def ip_to_binary_visual(network: str) -> str:
     """
     Create a visual binary representation of a network, showing
     the network bits and host bits
@@ -50,13 +67,13 @@ def ip_to_binary_visual(network):
         
         # Format as 8-bit octets
         formatted = []
-        for i in range(0, 32, 8):
-            octet = binary[i:i+8]
+        for i in range(0, BITS_IN_IPV4, BITS_PER_OCTET):
+            octet = binary[i:i+BITS_PER_OCTET]
             # Determine which bits are network vs. host bits in this octet
-            if prefix_len >= 8:
+            if prefix_len >= BITS_PER_OCTET:
                 # All bits in this octet are network bits
                 formatted.append(octet)
-                prefix_len -= 8
+                prefix_len -= BITS_PER_OCTET
             elif prefix_len > 0:
                 # Some bits in this octet are network bits
                 net_part = octet[:prefix_len]
@@ -68,10 +85,10 @@ def ip_to_binary_visual(network):
                 formatted.append(octet)
         
         return '.'.join(formatted)
-    except ValueError:
+    except (ValueError, TypeError):
         return "Invalid network"
 
-def create_prefix_mask(prefix_len, total_len=32):
+def create_prefix_mask(prefix_len: int, total_len: int = BITS_IN_IPV4) -> str:
     """
     Create a visual mask showing network (1) vs host (.) parts
     
@@ -86,9 +103,9 @@ def create_prefix_mask(prefix_len, total_len=32):
     mask = '1' * prefix_len + '.' * (total_len - prefix_len)
     
     # Insert dots every 8 bits for readability
-    return '.'.join(mask[i:i+8] for i in range(0, total_len, 8))
+    return '.'.join(mask[i:i+BITS_PER_OCTET] for i in range(0, total_len, BITS_PER_OCTET))
 
-def create_prefix_binary_mask(network_obj):
+def create_prefix_binary_mask(network_obj: ipaddress.IPv4Network) -> str:
     """
     Create a visual mask showing network vs host parts with actual binary values
     Network bits are shown as 1s, host bits show the actual binary value
@@ -107,13 +124,13 @@ def create_prefix_binary_mask(network_obj):
     
     # Format with 1s for network part, actual binary for host part
     formatted = []
-    for i in range(0, 32, 8):
-        octet = binary[i:i+8]
+    for i in range(0, BITS_IN_IPV4, BITS_PER_OCTET):
+        octet = binary[i:i+BITS_PER_OCTET]
         # Determine how many bits in this octet are network bits
-        if prefix_len >= 8:
+        if prefix_len >= BITS_PER_OCTET:
             # All bits in this octet are network bits, mark with 1s
-            formatted.append('1' * 8)
-            prefix_len -= 8
+            formatted.append('1' * BITS_PER_OCTET)
+            prefix_len -= BITS_PER_OCTET
         elif prefix_len > 0:
             # Some bits in this octet are network bits
             net_part = '1' * prefix_len
