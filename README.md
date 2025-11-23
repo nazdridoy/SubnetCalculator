@@ -130,7 +130,7 @@ Aggregate multiple subnets into optimal summary routes:
 ## Command-line Arguments
 
 ```
-usage: subcalc [-h] [--network NETWORK] [--vlsm [VLSM ...]] [--flsm [FLSM]] [--convert [CONVERT]]
+usage: subcalc [-h] [--network NETWORK] [--version] [--vlsm [VLSM ...]] [--flsm [FLSM]] [--convert [CONVERT]]
                [--validate [VALIDATE]] [--check-ip [CHECK_IP ...]] [--range [RANGE ...]]
                [--supernet [SUPERNET ...]]
 
@@ -139,6 +139,7 @@ Subnet Calculator Tool - Calculate and display subnet information
 options:
   -h, --help            show this help message and exit
   --network NETWORK     Base network address in CIDR notation (e.g., 192.168.0.0/24)
+  --version, -v         Show program version and exit
   --vlsm [VLSM ...]     Run Variable Length Subnet Mask calculator with specified host requirements (e.g., --vlsm 20 40 80)
   --flsm [FLSM]         Run Fixed Length Subnet Mask calculator with number of subnets (e.g., --flsm 4) or target prefix length (e.g., --flsm /28)
   --convert [CONVERT]   Convert between CIDR, subnet, and wildcard masks (e.g., --convert /24 or --convert 255.255.255.0)

@@ -4,6 +4,9 @@ This module defines all magic numbers and configuration values used throughout
 the SubnetCalculator project, improving code readability and maintainability.
 
 Module Constants:
+    Version:
+        VERSION: Current version of SubnetCalculator.
+    
     IPv4 Prefix Limits:
         MIN_PREFIX_LENGTH: Minimum IPv4 prefix length (0).
         MAX_PREFIX_LENGTH: Maximum IPv4 prefix length (32).
@@ -26,6 +29,9 @@ Module Constants:
         OCTETS_IN_IPV4: Number of octets in IPv4 (4).
         BITS_IN_IPV4: Total bits in IPv4 address (32).
 """
+
+# Version
+VERSION = "1.3.0"
 
 # IPv4 Prefix Limits
 MIN_PREFIX_LENGTH = 0

@@ -14,6 +14,7 @@ from iputility import run_ip_validation_tool, run_ip_in_network_tool, run_ip_ran
 from supernet import run_supernet_tool
 from utils.format import print_table
 from utils.network import display_network_summary as get_network_summary
+from constants import VERSION
 
 def display_network_summary(network):
     """Display summary information about a network"""
@@ -60,10 +61,18 @@ Examples:
         prefix_chars='-'  # Explicitly set to avoid Windows issues with / being interpreted as a flag
     )
     
+    # Base network argument
     parser.add_argument(
-        "--network", 
-        type=str, 
-        help="Base network address in CIDR notation (e.g., 192.168.0.0/24)"
+        "--network",
+        help="Base network in CIDR notation (e.g., 192.168.0.0/24)"
+    )
+    
+    # Version
+    parser.add_argument(
+        "--version", "-v",
+        action="version",
+        version=f"SubnetCalculator v{VERSION}",
+        help="Show program version and exit"
     )
     
     parser.add_argument(
