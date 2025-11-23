@@ -1,5 +1,17 @@
-"""
-IP notation conversion utilities.
+"""IP notation conversion utilities.
+
+Provides functions to convert between different IP network notation formats:
+CIDR prefix lengths, subnet masks, and wildcard masks.
+
+Functions:
+    cidr_to_subnet_mask: Convert CIDR prefix to subnet mask.
+    subnet_mask_to_cidr: Convert subnet mask to CIDR prefix.
+    subnet_mask_to_wildcard: Convert subnet mask to wildcard mask.
+    wildcard_to_subnet_mask: Convert wildcard mask to subnet mask.
+    cidr_to_wildcard: Convert CIDR prefix to wildcard mask.
+    wildcard_to_cidr: Convert wildcard mask to CIDR prefix.
+    detect_notation_type: Detect notation type from input string.
+    convert_notation: Convert between all notation formats.
 """
 import ipaddress
 

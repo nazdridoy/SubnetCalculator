@@ -1,5 +1,10 @@
-"""
-IP address validation utilities.
+"""IP address validation utilities.
+
+Provides functions for validating and analyzing IPv4 addresses,
+including class determination and type identification.
+
+Functions:
+    validate_ip: Validate IPv4 address and return detailed information.
 """
 import ipaddress
 from typing import Dict, Any

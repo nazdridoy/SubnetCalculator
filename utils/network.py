@@ -1,5 +1,16 @@
-"""
-Network calculation utilities.
+"""Network calculation utilities.
+
+Provides core network calculation functions for subnet planning,
+host calculations, and network validation.
+
+Functions:
+    validate_network: Validate network in CIDR notation.
+    calculate_hosts_per_subnet: Calculate usable hosts for a prefix length.
+    calculate_required_prefix_length: Calculate prefix length for host count.
+    display_network_summary: Generate network summary information.
+    check_ip_in_network: Check if IP address belongs to a network.
+    get_common_prefix: Find common prefix among networks.
+    calculate_subnet_bits: Calculate subnet bits required for subnets.
 """
 import ipaddress
 from typing import List, Tuple, Union, Dict, Any, Optional

@@ -1,4 +1,15 @@
 #!/usr/bin/env python3
+"""IP address utility tools module.
+
+Provides utilities for IP address validation, network membership checking,
+and IP range analysis.
+
+Functions:
+    calculate_ip_range: Calculate information about an IP range.
+    run_ip_validation_tool: Interactive IP validation tool.
+    run_ip_in_network_tool: Check if IP is within a network.
+    run_ip_range_tool: Analyze an IP address range.
+"""
 import ipaddress
 from utils.validation import validate_ip
 from utils.network import check_ip_in_network, display_network_summary

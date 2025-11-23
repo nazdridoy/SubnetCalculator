@@ -1,4 +1,12 @@
 #!/usr/bin/env python3
+"""Notation conversion tool module.
+
+Provides functionality to convert between different network notation formats:
+CIDR notation, subnet masks, and wildcard masks.
+
+Functions:
+    run_conversion_tool: Interactive conversion tool (CLI entry point).
+"""
 from utils.conversion import convert_notation
 from utils.binary import int_to_binary
 import ipaddress

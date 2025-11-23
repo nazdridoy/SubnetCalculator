@@ -1,5 +1,15 @@
-"""
-Binary representation utilities for IP addresses.
+"""Binary representation utilities for IP addresses.
+
+Provides functions for converting IP addresses and networks to binary format,
+creating visual representations, and generating prefix masks.
+
+Functions:
+    int_to_binary: Convert integer to binary string with specified width.
+    get_binary_ip: Convert network address to 32-bit binary string.
+    format_binary_ip: Format binary string with dots for readability.
+    ip_to_binary_visual: Create visual binary representation showing network/host bits.
+    create_prefix_mask: Create visual mask showing network vs host parts.
+    create_prefix_binary_mask: Create visual mask with actual binary values.
 """
 import ipaddress
 from constants import BITS_PER_OCTET, OCTETS_IN_IPV4, BITS_IN_IPV4

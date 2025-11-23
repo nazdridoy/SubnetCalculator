@@ -1,3 +1,16 @@
+"""Variable Length Subnet Mask (VLSM) calculator module.
+
+This module provides functionality for creating optimally-sized subnets based on
+specific host requirements. Subnets are allocated in descending order of size.
+
+Classes:
+    VLSMSubnetInfo: NamedTuple containing subnet details (subnet, needed_hosts, total_hosts).
+
+Functions:
+    get_subnet_info: Calculate VLSM subnets based on host requirements.
+    display_subnet_info: Format subnet information for table display.
+    run_vlsm_tool: Interactive CLI tool for VLSM subnet calculation.
+"""
 import ipaddress
 from typing import List, NamedTuple
 from utils.network import validate_network, calculate_required_prefix_length
@@ -75,4 +88,75 @@ def get_subnet_info(network: str, hosts_required: List[int]) -> List[VLSMSubnetI
 
 def display_subnet_info(subnet_info):
     return format_subnet_info(subnet_info, is_flsm=False)
+
+
+def run_vlsm_tool(network=None, hosts_input=None):
+    """Run the Variable Length Subnet Mask calculator tool.
+    
+    Interactive CLI tool for VLSM subnet calculation. Can be called
+    programmatically with parameters or run interactively.
+    
+    Args:
+        network: Optional base network in CIDR notation.
+        hosts_input: Optional host requirements as string, list, or None for interactive.
+    """
+    try:
+        if network is None:
+            network = input("Enter the base subnet address (e.g., 192.168.0.0/24): ")
+        
+        # Handle different input types for hosts_input
+        if hosts_input is None:
+            # Interactive mode
+            hosts_input = input("Enter the number of hosts required for each subnet (comma or space separated, e.g., 50 25 10): ")
+            hosts_required = [int(h.strip()) for h in hosts_input.replace(',', ' ').split() if h.strip()]
+        elif isinstance(hosts_input, list):
+            # Already parsed by argparse
+            hosts_required = [int(h) for h in hosts_input]
+        elif isinstance(hosts_input, str):
+            # String input - parse it
+            hosts_required = [int(h.strip()) for h in hosts_input.replace(',', ' ').split() if h.strip()]
+        else:
+            print(f"Error: Invalid hosts_input type: {type(hosts_input)}")
+            return
+        
+        # Validate hosts
+        if not hosts_required:
+            print("Error: No valid host requirements provided.")
+            return
+        if any(h <= 0 for h in hosts_required):
+            print("Error: All host requirements must be greater than 0.")
+            return
+        
+        try:
+            subnets = get_subnet_info(network, hosts_required)
+            
+            if not subnets:
+                print("No subnets created.")
+                return
+            
+            # Display summary
+            network_obj = ipaddress.ip_network(network, strict=False)
+            print(f"\nVLSM Summary:")
+            print(f"Base Network:         {network_obj}")
+            print(f"Number of Subnets:    {len(subnets)}")
+            print(f"Total Hosts Needed:   {sum(hosts_required)}")
+            print(f"Total Hosts Allocated: {sum(s.total_hosts for s in subnets)}")
+            print()
+            
+        except ValueError as e:
+            print(e)
+            return
+        
+        # Generate the table data
+        table_data = [
+            ["Subnet", "Subnet Mask", "Network ID", "Broadcast ID", "First Host IP", "Last Host IP", "Needed Hosts", "Total Hosts"]
+        ]
+        
+        for subnet_info in subnets:
+            table_data.append(display_subnet_info(subnet_info))
+        
+        print_table(table_data)
+    except KeyboardInterrupt:
+        print("\nOperation cancelled by user.")
+        return
 

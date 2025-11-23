@@ -2,6 +2,29 @@
 
 This module defines all magic numbers and configuration values used throughout
 the SubnetCalculator project, improving code readability and maintainability.
+
+Module Constants:
+    IPv4 Prefix Limits:
+        MIN_PREFIX_LENGTH: Minimum IPv4 prefix length (0).
+        MAX_PREFIX_LENGTH: Maximum IPv4 prefix length (32).
+        MAX_USABLE_PREFIX: Maximum usable prefix with hosts (/30).
+        POINT_TO_POINT_PREFIX: RFC 3021 point-to-point links (/31).
+        HOST_PREFIX: Single host address (/32).
+    
+    Performance Thresholds:
+        LARGE_NETWORK_THRESHOLD: Threshold for algorithm selection.
+    
+    Network Calculation:
+        NETWORK_AND_BROADCAST_OVERHEAD: Reserved addresses per subnet.
+    
+    IP Address Classes:
+        CLASS_*_START/END: IPv4 address class boundaries.
+        LOOPBACK: Loopback address (127).
+    
+    Binary Formatting:
+        BITS_PER_OCTET: Bits per IPv4 octet (8).
+        OCTETS_IN_IPV4: Number of octets in IPv4 (4).
+        BITS_IN_IPV4: Total bits in IPv4 address (32).
 """
 
 # IPv4 Prefix Limits

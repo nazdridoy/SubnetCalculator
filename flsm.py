@@ -1,8 +1,24 @@
+"""Fixed Length Subnet Mask (FLSM) calculator module.
+
+This module provides functionality for calculating equal-sized subnets from a base network.
+Supports calculation by number of subnets or by target prefix length.
+
+Classes:
+    SubnetInfo: NamedTuple containing subnet details (subnet, index, total_hosts).
+
+Functions:
+    get_subnet_info: Calculate subnets by number of subnets required.
+    get_subnet_info_by_prefix: Calculate subnets by target prefix length.
+    parse_subnet_input: Parse user input for subnet/prefix specification.
+    display_summary: Display FLSM calculation summary.
+    display_subnet_info: Format subnet information for table display.
+    run_flsm_tool: Interactive CLI tool for FLSM subnet calculation.
+"""
 import ipaddress
 from typing import List, NamedTuple
 from constants import MAX_USABLE_PREFIX
 from utils.network import validate_network, calculate_subnet_bits, calculate_hosts_per_subnet
-from utils.format import format_subnet_info
+from utils.format import format_subnet_info, print_table
 
 
 class SubnetInfo(NamedTuple):
@@ -110,6 +126,131 @@ def get_subnet_info_by_prefix(network: str, new_prefix: int) -> List[SubnetInfo]
     
     return allocated_subnets
 
+def parse_subnet_input(subnet_input):
+    """Parse subnet input to determine if it's a number of subnets or prefix length.
+    
+    Args:
+        subnet_input: String or int representing either number of subnets or prefix length.
+        
+    Returns:
+        Tuple of (by_prefix: bool, value: int) or (None, None) if invalid.
+    """
+    if isinstance(subnet_input, str) and subnet_input.startswith('/'):
+        try:
+            prefix_length = int(subnet_input[1:])
+            return True, prefix_length
+        except (ValueError, IndexError):
+            print("Invalid prefix length. Please provide a number after the '/' prefix.")
+            return None, None
+    else:
+        try:
+            num_subnets = int(subnet_input)
+            if num_subnets <= 0:
+                print("Number of subnets must be greater than 0.")
+                return None, None
+            return False, num_subnets
+        except ValueError:
+            print("Invalid input. Please provide either a number of subnets or a prefix length (e.g., 16 or /28).")
+            return None, None
+
+
+def display_summary(network_obj, subnet_obj, subnets, by_prefix, value):
+    """Display FLSM calculation summary.
+    
+    Args:
+        network_obj: Base network object.
+        subnet_obj: First subnet object.
+        subnets: List of all SubnetInfo tuples.
+        by_prefix: Whether calculation was by prefix or by number.
+        value: Either prefix_length or num_subnets.
+    """
+    subnet_bits = subnet_obj.prefixlen - network_obj.prefixlen
+    actual_subnets = len(subnets)
+    hosts_per_subnet = subnets[0].total_hosts
+    max_subnets = 2 ** subnet_bits
+    
+    print("\nFLSM Summary:")
+    print(f"Base Network:         {network_obj}")
+    print(f"Subnet Bits:          {subnet_bits}")
+    print(f"New Prefix Length:    /{subnet_obj.prefixlen}")
+    print(f"Subnet Mask:          {subnet_obj.netmask}")
+    print(f"Hosts per Subnet:     {hosts_per_subnet}")
+    
+    if by_prefix:
+        print(f"Specified Prefix:     /{value}")
+        print(f"Maximum Subnets:      {max_subnets}")
+        print(f"Created Subnets:      {actual_subnets}")
+    else:
+        unused_subnets = max_subnets - value
+        print(f"Requested Subnets:    {value}")
+        print(f"Actual Subnets:       {actual_subnets}")
+        print(f"Unused Subnets:       {unused_subnets}")
+    print()
+
+
 def display_subnet_info(subnet_info):
-    """Format subnet information for display in a table."""
+    """Format subnet information for display in a table.
+    
+    Args:
+        subnet_info: SubnetInfo NamedTuple containing subnet details.
+        
+    Returns:
+        List of formatted strings for table display.
+    """
     return format_subnet_info(subnet_info, is_flsm=True)
+
+
+def run_flsm_tool(network=None, subnet_input=None):
+    """Run the Fixed Length Subnet Mask calculator tool.
+    
+    Interactive CLI tool for FLSM subnet calculation. Can be called
+    programmatically with parameters or run interactively.
+    
+    Args:
+        network: Optional base network in CIDR notation.
+        subnet_input: Optional number of subnets or prefix length (e.g., 4 or '/26').
+    """
+    try:
+        if network is None:
+            network = input("Enter the base subnet address (e.g., 192.168.0.0/24): ")
+        
+        if subnet_input is None:
+            subnet_input = input("Enter the number of subnets to create OR prefix length (e.g., 16 or /28): ")
+        
+        # Parse input
+        by_prefix, value = parse_subnet_input(subnet_input)
+        if value is None:
+            return
+        
+        try:
+            # Get subnets based on either number of subnets or prefix length
+            if by_prefix:
+                subnets = get_subnet_info_by_prefix(network, value)
+            else:
+                subnets = get_subnet_info(network, value)
+            
+            if not subnets:
+                print("No subnets created.")
+                return
+            
+            # Display summary
+            network_obj = ipaddress.ip_network(network, strict=False)
+            subnet_obj = subnets[0].subnet
+            display_summary(network_obj, subnet_obj, subnets, by_prefix, value)
+            
+        except ValueError as e:
+            print(e)
+            return
+        
+        # Generate the table data
+        table_data = [
+            ["Subnet", "CIDR Notation", "Subnet Mask", "Network ID", "Broadcast ID", "First Host IP", "Last Host IP", "Hosts"]
+        ]
+        
+        for subnet_info in subnets:
+            table_data.append(display_subnet_info(subnet_info))
+        
+        print_table(table_data)
+    except KeyboardInterrupt:
+        print("\nOperation cancelled by user.")
+        return

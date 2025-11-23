@@ -7,8 +7,8 @@ try:
 except ImportError:
     # readline is not available on all platforms (like Windows without additional packages)
     pass
-from vlsm import get_subnet_info as get_vlsm_subnet_info, display_subnet_info as display_vlsm_subnet_info
-from flsm import get_subnet_info as get_flsm_subnet_info, get_subnet_info_by_prefix as get_flsm_subnet_info_by_prefix, display_subnet_info as display_flsm_subnet_info
+from vlsm import run_vlsm_tool
+from flsm import run_flsm_tool
 from notation import run_conversion_tool
 from iputility import run_ip_validation_tool, run_ip_in_network_tool, run_ip_range_tool
 from supernet import run_supernet_tool
@@ -34,124 +34,6 @@ def display_network_summary(network):
         print(f"Last Usable Host:    {summary['last_usable']}")
     except Exception as e:
         print(f"Error: {e}")
-
-def run_vlsm_tool(network=None, hosts_required=None):
-    """Run the Variable Length Subnet Mask calculator tool"""
-    try:
-        if network is None:
-            network = input("Enter the base subnet address (e.g., 192.168.0.0/24): ")
-        
-        if hosts_required is None or len(hosts_required) == 0:
-            hosts_input = input("Enter the required number of hosts for multiple subnets, separated by commas (e.g., 50,40,10,30,60): ")
-            try:
-                hosts_required = list(map(int, hosts_input.split(',')))
-            except ValueError:
-                print("Invalid input for hosts required. Please provide a comma-separated list of integers.")
-                return
-        
-        try:
-            subnets = get_vlsm_subnet_info(network, hosts_required)
-        except ValueError as e:
-            print(e)
-            return
-        
-        table_data = [
-            ["Subnet", "Subnet Mask", "Network ID", "Broadcast ID", "First Host IP", "Last Host IP", "Needed Hosts", "Total Hosts"]
-        ]
-        
-        for subnet_info in subnets:
-            table_data.append(display_vlsm_subnet_info(subnet_info))
-        
-        print_table(table_data)
-    except KeyboardInterrupt:
-        print("\nOperation cancelled by user.")
-        return
-
-def run_flsm_tool(network=None, subnet_input=None):
-    """Run the Fixed Length Subnet Mask calculator tool"""
-    try:
-        if network is None:
-            network = input("Enter the base subnet address (e.g., 192.168.0.0/24): ")
-        
-        if subnet_input is None:
-            subnet_input = input("Enter the number of subnets to create OR prefix length (e.g., 16 or /28): ")
-        
-        # Process the input to determine if it's a number of subnets or a prefix length
-        by_prefix = False
-        if isinstance(subnet_input, str) and subnet_input.startswith('/'):
-            try:
-                prefix_length = int(subnet_input[1:])
-                by_prefix = True
-            except (ValueError, IndexError):
-                print("Invalid prefix length. Please provide a number after the '/' prefix.")
-                return
-        else:
-            try:
-                num_subnets = int(subnet_input)
-                if num_subnets <= 0:
-                    print("Number of subnets must be greater than 0.")
-                    return
-            except ValueError:
-                print("Invalid input. Please provide either a number of subnets or a prefix length (e.g., 16 or /28).")
-                return
-        
-        try:
-            # Get subnets based on either number of subnets or prefix length
-            if by_prefix:
-                subnets = get_flsm_subnet_info_by_prefix(network, prefix_length)
-                num_subnets = len(subnets)  # For the summary info
-            else:
-                subnets = get_flsm_subnet_info(network, num_subnets)
-            
-            # Calculate the summary information
-            if not subnets:
-                print("No subnets created.")
-                return
-            
-            # Extract information from the first subnet
-            network_obj = ipaddress.ip_network(network, strict=False)
-            subnet_obj = subnets[0][0]
-            subnet_bits = subnet_obj.prefixlen - network_obj.prefixlen
-            actual_subnets = len(subnets)
-            hosts_per_subnet = subnets[0][2]  # From the tuple (subnet, index, total_hosts)
-            
-            # Calculate max possible subnets with this prefix length
-            max_subnets = 2 ** subnet_bits
-            unused_subnets = max_subnets - actual_subnets if by_prefix else max_subnets - num_subnets
-            
-            # Print summary
-            print("\nFLSM Summary:")
-            print(f"Base Network:         {network_obj}")
-            print(f"Subnet Bits:          {subnet_bits}")
-            print(f"New Prefix Length:    /{subnet_obj.prefixlen}")
-            print(f"Subnet Mask:          {subnet_obj.netmask}")
-            print(f"Hosts per Subnet:     {hosts_per_subnet}")
-            if by_prefix:
-                print(f"Specified Prefix:     /{prefix_length}")
-                print(f"Maximum Subnets:      {max_subnets}")
-                print(f"Created Subnets:      {actual_subnets}")
-            else:
-                print(f"Requested Subnets:    {num_subnets}")
-                print(f"Actual Subnets:       {actual_subnets}")
-                print(f"Unused Subnets:       {unused_subnets}")
-            print()
-            
-        except ValueError as e:
-            print(e)
-            return
-        
-        # Generate the table data
-        table_data = [
-            ["Subnet", "CIDR Notation", "Subnet Mask", "Network ID", "Broadcast ID", "First Host IP", "Last Host IP", "Hosts"]
-        ]
-        
-        for subnet_info in subnets:
-            table_data.append(display_flsm_subnet_info(subnet_info))
-        
-        print_table(table_data)
-    except KeyboardInterrupt:
-        print("\nOperation cancelled by user.")
-        return
 
 def main():
     """Main entry point for the subcalc tool"""
@@ -284,26 +166,16 @@ Examples:
         
     # VLSM mode
     if args.vlsm is not None:
-        if args.network:
-            run_vlsm_tool(args.network, args.vlsm)
-        else:
-            run_vlsm_tool(hosts_required=args.vlsm)
+        # Convert empty list to None for interactive mode
+        hosts = args.vlsm if args.vlsm else None
+        run_vlsm_tool(args.network, hosts)
         return
             
     # FLSM mode    
-    if args.flsm:
-        if args.flsm == 'interactive':
-            # Fully interactive if neither arg is provided
-            if args.network:
-                run_flsm_tool(args.network)
-            else:
-                run_flsm_tool()
-        else:
-            # Semi-interactive if only one arg is provided
-            if args.network:
-                run_flsm_tool(args.network, args.flsm)
-            else:
-                run_flsm_tool(subnet_input=args.flsm)
+    if args.flsm is not None:
+        # Convert 'interactive' or empty string to None for interactive mode
+        subnet_input = None if args.flsm == 'interactive' else args.flsm
+        run_flsm_tool(args.network, subnet_input)
         return
     
     # No recognized arguments provided
